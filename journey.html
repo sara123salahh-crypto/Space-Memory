@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Memory — Journey</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/tailwind-config.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Titillium+Web:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+#breakupScene .bx-core,#breakupScene .bx-ring{position:absolute;inset:0;margin:auto;width:64px;height:64px;border-radius:9999px}
+.bx-core{display:flex;align-items:center;justify-content:center;font:600 10px/1 monospace;color:#fc3d21;background:radial-gradient(circle,#fc3d2155,#fc3d2110 70%);border:1px solid #fc3d2199;box-shadow:0 0 24px #fc3d2166;animation:bxPulse 2s ease-in-out infinite;z-index:2}
+@keyframes bxPulse{50%{scale:1.12;box-shadow:0 0 38px #fc3d2199}}
+.bx-ring{border:1.5px solid #fc3d21;opacity:0;z-index:1}
+.breakup-active .bx-ring{animation:bxRing 2.4s ease-out infinite}
+@keyframes bxRing{from{scale:1;opacity:.7}to{scale:5;opacity:0}}
+.bx-line{stroke-dasharray:1;stroke-dashoffset:1;opacity:.45;transition:stroke-dashoffset 1s ease-out .2s}
+.breakup-active .bx-line{stroke-dashoffset:0}
+.bx-piece{position:absolute;left:50%;top:50%;width:84px;translate:-50% -50%;scale:.3;opacity:0;z-index:3;transition:all .9s cubic-bezier(.2,.8,.2,1) var(--d)}
+.breakup-active .bx-piece{left:var(--l);top:var(--t);scale:1;opacity:1}
+.bx-body{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:14px;border:1px solid var(--c);color:var(--c);font:600 9px/1.1 monospace;letter-spacing:.05em;text-align:center}
+.bx-body svg{width:44px;height:44px}
+.breakup-active .bx-body{animation:bxBob 4s ease-in-out infinite;animation-delay:var(--d)}
+@keyframes bxBob{50%{translate:0 -6px}}
+@media(prefers-reduced-motion:reduce){.bx-core,.bx-ring,.bx-body{animation:none!important}}
+</style>
+</head>
+<body data-page="journey" class="bg-nasa-darkBg text-white font-sans overflow-x-hidden selection:bg-nasa-red selection:text-white">
+
+<canvas id="space-canvas"></canvas><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="s-lm" viewBox="0 0 64 64"><path d="M20 18h24l8 8v10l-8 6H20l-8-6V26z" fill="#d97706" fill-opacity=".85" stroke="currentColor" stroke-width="2"/><path d="M22 42L8 58M42 42l14 16M32 42v16" stroke="currentColor" stroke-width="2.5"/><path d="M3 59h12M49 59h12M26 59h12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="30" r="5" fill="#0f172a" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="s-ssm" viewBox="0 0 64 64"><path d="M6 58h52" stroke="currentColor" stroke-width="3"/><path d="M14 58l14-32 14 12" stroke="currentColor" stroke-width="3" fill="none" stroke-linejoin="round"/><path d="M42 38l12 6-4 12-14-4z" fill="currentColor" fill-opacity=".35" stroke="currentColor" stroke-width="2"/><circle cx="28" cy="26" r="4" fill="#0f172a" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="s-arm" viewBox="0 0 64 64"><rect x="6" y="48" width="22" height="10" rx="2" fill="currentColor" fill-opacity=".3" stroke="currentColor" stroke-width="2"/><path d="M16 48V30l18-14 14 8" stroke="currentColor" stroke-width="4" fill="none" stroke-linejoin="round"/><circle cx="16" cy="30" r="4" fill="#0f172a" stroke="currentColor" stroke-width="2"/><circle cx="34" cy="16" r="4" fill="#0f172a" stroke="currentColor" stroke-width="2"/><path d="M48 24l8 12h-6l-4-4z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+<symbol id="s-seis" viewBox="0 0 64 64"><path d="M10 38a22 22 0 0 1 44 0z" fill="currentColor" fill-opacity=".25" stroke="currentColor" stroke-width="2.5"/><rect x="8" y="38" width="48" height="6" rx="2" fill="currentColor" fill-opacity=".5"/><path d="M10 54l7-4 5 6 6-11 6 9 5-5 9 3" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M32 16V8" stroke="currentColor" stroke-width="2"/><circle cx="32" cy="7" r="2.5" fill="currentColor"/></symbol>
+<symbol id="s-rotor" viewBox="0 0 64 64"><path d="M8 46L46 14l6 3-3 5 6 4-5 4 3 5-9 2L12 52z" fill="currentColor" fill-opacity=".3" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><circle cx="14" cy="49" r="5" fill="#0f172a" stroke="currentColor" stroke-width="2.5"/><path d="M26 38l5-2-3-5 6-3" stroke="currentColor" stroke-width="1.8" fill="none"/></symbol>
+<symbol id="s-rtg" viewBox="0 0 64 64"><rect x="8" y="24" width="48" height="20" rx="3" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="2.5"/><path d="M16 24v20M23 24v20M30 24v20M37 24v20M44 24v20M51 24v20" stroke="currentColor" stroke-width="2"/><path d="M56 30h6v8h-6M8 30H2v8h6" stroke="currentColor" stroke-width="2.5" fill="none"/><path d="M32 19v-7M23 20l-4-6M41 20l4-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+<symbol id="s-mag" viewBox="0 0 64 64"><rect x="3" y="30" width="32" height="4" fill="currentColor" fill-opacity=".6"/><rect x="35" y="22" width="16" height="20" rx="3" fill="currentColor" fill-opacity=".25" stroke="currentColor" stroke-width="2.5"/><circle cx="43" cy="32" r="5" fill="#0f172a" stroke="currentColor" stroke-width="2"/><path d="M53 18q9 14 0 28M57 12q14 20 0 40" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></symbol>
+<symbol id="s-ccd" viewBox="0 0 64 64"><rect x="6" y="18" width="36" height="28" rx="4" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="2.5"/><circle cx="24" cy="32" r="9" fill="#020514" stroke="currentColor" stroke-width="2.5"/><circle cx="24" cy="32" r="3.5" fill="#FC3D21"/><path d="M42 26l15-7v26l-15-7z" fill="currentColor" fill-opacity=".4" stroke="currentColor" stroke-width="2"/><path d="M13 18v-5h10v5" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+</defs></svg>
+
+<main class="relative z-10">
+  <section id="journey" class="min-h-screen relative flex items-center justify-center px-6 py-24">
+    <div class="max-w-6xl w-full mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+      
+      <!-- Text Narrative -->
+      <div class="md:col-span-5 space-y-6">
+        <div class="text-nasa-lightBlue font-mono text-sm tracking-widest font-semibold flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded bg-nasa-blue/30 border border-nasa-blue/50">01</span>
+          <span>MISSION LAUNCH & JOURNEY</span>
+        </div>
+        <h2 class="font-nasa font-bold text-3xl sm:text-5xl text-white leading-tight">
+          Every mission starts with a bold leap.
+        </h2>
+        <p class="text-gray-300 leading-relaxed">
+          Traversing hundreds of thousands of kilometers through the silent vacuum of deep space, our probe carried sensors designed to unlock planetary secrets.
+        </p>
+      </div>
+
+      <!-- Interactive Craft Stage -->
+      <div class="md:col-span-7 h-96 rounded-2xl nasa-glass relative flex items-center justify-center overflow-hidden border border-nasa-blue/30 shadow-2xl">
+        
+        <!-- Grid lines overlay -->
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#0072ce15_1px,transparent_1px),linear-gradient(to_bottom,#0072ce15_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+
+        <!-- Spacecraft Element (controlled by scroll JS) -->
+        <div id="craft" class="relative z-10 transition-transform duration-100 ease-out flex items-center justify-center">
+          
+          <!-- Thruster flame -->
+          <div class="sat-flame absolute top-1/2 -translate-y-1/2 w-36 h-9 rounded-full" style="right:calc(100% - 64px);transform-origin:right center;background:linear-gradient(270deg,#fff 0,#7dd3fc 10%,#fb923c 32%,#fc3d21 58%,transparent);filter:blur(3px)"></div>
+          <!-- Satellite -->
+          <svg class="w-60 h-40 drop-shadow-[0_0_22px_rgba(0,114,206,0.75)]" viewBox="0 0 220 146" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="satGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset=".5" stop-color="#d97706"/><stop offset="1" stop-color="#78350f"/></linearGradient>
+              <linearGradient id="satPanel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2563eb"/><stop offset=".6" stop-color="#0B3D91"/><stop offset="1" stop-color="#1e3a8a"/></linearGradient>
+              <linearGradient id="satMetal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f8fafc"/><stop offset="1" stop-color="#94a3b8"/></linearGradient>
+              <pattern id="satCells" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" stroke="#93c5fd" stroke-opacity=".5" stroke-width=".8"/></pattern>
+            </defs>
+            <g stroke="#94a3b8" stroke-width="1.5">
+              <path d="M84 46H158L170 6H96Z" fill="url(#satPanel)"/><path d="M84 46H158L170 6H96Z" fill="url(#satCells)"/>
+              <path d="M84 98H158L170 138H96Z" fill="url(#satPanel)"/><path d="M84 98H158L170 138H96Z" fill="url(#satCells)"/>
+            </g>
+            <path d="M102 6H114L100 46H88Z" fill="#fff" opacity=".18"/><path d="M102 138H114L100 98H88Z" fill="#fff" opacity=".18"/>
+            <rect x="118" y="45" width="8" height="9" fill="#cbd5e1"/><rect x="118" y="90" width="8" height="9" fill="#cbd5e1"/>
+            <path d="M70 60L58 54V90L70 84Z" fill="url(#satMetal)" stroke="#64748b"/>
+            <rect x="70" y="52" width="100" height="40" rx="9" fill="url(#satGold)" stroke="#fde68a" stroke-width="1.5"/>
+            <path d="M80 58l10 8-8 10 12 8M120 56l-8 12 14 6-6 12" stroke="#fff" stroke-opacity=".35" stroke-width="1.2"/>
+            <rect x="132" y="58" width="30" height="28" rx="4" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+            <circle cx="147" cy="72" r="8" fill="#020514" stroke="#0072CE" stroke-width="2"/><circle cx="147" cy="72" r="3.5" fill="#FC3D21"/>
+            <path d="M170 72H184" stroke="#e2e8f0" stroke-width="3"/>
+            <path d="M184 50Q210 72 184 94Q193 72 184 50Z" fill="url(#satMetal)" stroke="#94a3b8" stroke-width="1.5"/>
+            <path d="M187 72H200" stroke="#fda4af" stroke-width="2"/><circle cx="201" cy="72" r="2.5" fill="#FC3D21" class="sat-blink"/>
+            <circle cx="96" cy="6" r="2.5" fill="#22c55e" class="sat-blink"/><circle cx="96" cy="138" r="2.5" fill="#ef4444" class="sat-blink"/>
+          </svg>
+        </div>
+
+        <div class="absolute bottom-4 left-4 text-xs font-mono text-gray-400">
+          TELEMETRY: <span class="text-emerald-400">NOMINAL</span> | VELOCITY: <span class="text-nasa-lightBlue">28,400 KM/H</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="breakup" class="min-h-screen relative flex items-center justify-center px-6 py-24">
+    <div class="max-w-6xl w-full mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+      
+      <!-- Text Narrative -->
+      <div class="md:col-span-5 space-y-6">
+        <div class="text-nasa-red font-mono text-sm tracking-widest font-semibold flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded bg-nasa-red/20 border border-nasa-red/50">02</span>
+          <span>HARDWARE SEPARATION</span>
+        </div>
+        <h2 class="font-nasa font-bold text-3xl sm:text-5xl text-white leading-tight">
+          The pieces scattered across the void.
+        </h2>
+        <p class="text-gray-300 leading-relaxed">
+          Descent and landing, primary sub-systems separated into individual trajectories. Each piece holds scientific data about the planetary environment.
+        </p>
+        <ul class="space-y-1.5 text-xs font-mono text-gray-300"><li class="flex items-center gap-2"><svg class="w-6 h-6 shrink-0" style="color:#cbd5e1"><use href="#s-lm"/></svg>Lunar Module Descent Stage</li><li class="flex items-center gap-2"><svg class="w-6 h-6 shrink-0" style="color:#cbd5e1"><use href="#s-ssm"/></svg>Surface Sampler</li><li class="flex items-center gap-2"><svg class="w-6 h-6 shrink-0" style="color:#fb923c"><use href="#s-arm"/></svg>Remote Sampler Arm</li><li class="flex items-center gap-2"><svg class="w-6 h-6 shrink-0" style="color:#fb923c"><use href="#s-seis"/></svg>Seismometer</li><li class="flex items-center gap-2"><svg class="w-6 h-6 shrink-0" style="color:#fb923c"><use href="#s-rotor"/></svg>Damaged Rotor Blade</li><li class="flex items-center gap-2"><svg class="w-6 h-6 shrink-0" style="color:#a78bfa"><use href="#s-rtg"/></svg>Radioisotope Generator</li><li class="flex items-center gap-2"><svg class="w-6 h-6 shrink-0" style="color:#a78bfa"><use href="#s-mag"/></svg>Helium Vector Magnetometer</li><li class="flex items-center gap-2"><svg class="w-6 h-6 shrink-0" style="color:#a78bfa"><use href="#s-ccd"/></svg>Photometer / CCD Camera</li></ul>
+      </div>
+
+      <!-- Separation Scene Container -->
+      <div id="breakupScene" class="md:col-span-7 h-96 rounded-2xl nasa-glass relative overflow-hidden border border-nasa-red/30 shadow-2xl">
+        <div class="absolute inset-0 bg-[radial-gradient(#fc3d2115_1px,transparent_1px)] [background-size:20px_20px]"></div>
+        <svg class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"><g stroke-width="1.5" fill="none"><line class="bx-line" pathLength="1" x1="50%" y1="50%" x2="50%" y2="16%" stroke="#cbd5e1"/><line class="bx-line" pathLength="1" x1="50%" y1="50%" x2="75.5%" y2="26%" stroke="#cbd5e1"/><line class="bx-line" pathLength="1" x1="50%" y1="50%" x2="86%" y2="50%" stroke="#fb923c"/><line class="bx-line" pathLength="1" x1="50%" y1="50%" x2="75.5%" y2="74%" stroke="#fb923c"/><line class="bx-line" pathLength="1" x1="50%" y1="50%" x2="50%" y2="84%" stroke="#fb923c"/><line class="bx-line" pathLength="1" x1="50%" y1="50%" x2="24.5%" y2="74%" stroke="#a78bfa"/><line class="bx-line" pathLength="1" x1="50%" y1="50%" x2="14%" y2="50%" stroke="#a78bfa"/><line class="bx-line" pathLength="1" x1="50%" y1="50%" x2="24.5%" y2="26%" stroke="#a78bfa"/></g></svg>
+        <span class="bx-ring"></span><span class="bx-ring" style="animation-delay:.8s"></span>
+        <div class="bx-core">CORE</div>
+        <div class="bx-piece" style="--l:50%;--t:16%;--d:0.00s;--c:#cbd5e1"><div class="bx-body nasa-glass"><svg><use href="#s-lm"/></svg><span>DESCENT STAGE</span></div></div><div class="bx-piece" style="--l:75.5%;--t:26%;--d:0.08s;--c:#cbd5e1"><div class="bx-body nasa-glass"><svg><use href="#s-ssm"/></svg><span>SURF. SAMPLER</span></div></div><div class="bx-piece" style="--l:86%;--t:50%;--d:0.16s;--c:#fb923c"><div class="bx-body nasa-glass"><svg><use href="#s-arm"/></svg><span>SAMPLER ARM</span></div></div><div class="bx-piece" style="--l:75.5%;--t:74%;--d:0.24s;--c:#fb923c"><div class="bx-body nasa-glass"><svg><use href="#s-seis"/></svg><span>SEISMOMETER</span></div></div><div class="bx-piece" style="--l:50%;--t:84%;--d:0.32s;--c:#fb923c"><div class="bx-body nasa-glass"><svg><use href="#s-rotor"/></svg><span>ROTOR BLADE</span></div></div><div class="bx-piece" style="--l:24.5%;--t:74%;--d:0.40s;--c:#a78bfa"><div class="bx-body nasa-glass"><svg><use href="#s-rtg"/></svg><span>RTG</span></div></div><div class="bx-piece" style="--l:14%;--t:50%;--d:0.48s;--c:#a78bfa"><div class="bx-body nasa-glass"><svg><use href="#s-mag"/></svg><span>HELIUM MAG</span></div></div><div class="bx-piece" style="--l:24.5%;--t:26%;--d:0.56s;--c:#a78bfa"><div class="bx-body nasa-glass"><svg><use href="#s-ccd"/></svg><span>PHOTOMETER</span></div></div>
+      </div>
+
+    </div>
+  </section>
+<div class="relative px-6 pb-16">
+    <nav class="w-full max-w-5xl mx-auto mt-10 flex items-center justify-between gap-3 font-nasa text-sm" aria-label="Page navigation">
+      <a href="home.html" class="px-5 py-2.5 rounded-full nasa-glass hover:border-nasa-red/60 transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Home</a>
+      <a href="worlds.html" class="px-5 py-2.5 rounded-full bg-nasa-blue hover:bg-nasa-lightBlue font-semibold transition-colors">Worlds<i class="fa-solid fa-arrow-right ml-2"></i></a>
+    </nav>
+</div>
+</main>
+
+<script src="js/shared.js"></script>
+<script>
+const craft = document.getElementById('craft');
+const breakupScene = document.getElementById('breakupScene');
+
+function checkBreakup() {
+  const rect = breakupScene.getBoundingClientRect();
+  if (rect.top < window.innerHeight * 0.75 && rect.bottom > 0) breakupScene.classList.add('breakup-active');
+}
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  craft.style.transform = `translateY(${Math.cos(y * 0.004) * 20}px) rotate(${Math.sin(y * 0.005) * 12}deg)`;
+  checkBreakup();
+});
+checkBreakup();
+</script>
+</body>
+</html>

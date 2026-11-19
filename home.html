@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Memory — Home</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/tailwind-config.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Titillium+Web:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="home" class="bg-nasa-darkBg text-white font-sans overflow-x-hidden selection:bg-nasa-red selection:text-white">
+
+<canvas id="space-canvas"></canvas>
+
+<main class="relative z-10">
+  <section id="hero" class="min-h-screen relative flex items-center justify-center px-6 pt-20 overflow-hidden">
+    
+    <!-- Deep Space Atmospheric Glow -->
+    <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+      <div class="w-[600px] h-[600px] bg-nasa-blue/15 rounded-full filter blur-[120px] animate-pulse-glow"></div>
+      <div class="w-[350px] h-[350px] bg-nasa-red/10 rounded-full filter blur-[90px] absolute translate-x-32 -translate-y-20"></div>
+    </div>
+
+    <div class="max-w-6xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-20">
+      
+      <!-- Text & Headline -->
+      <div class="lg:col-span-7 text-center lg:text-left space-y-6">
+        
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-nasa-blue/20 border border-nasa-blue/40 text-nasa-lightBlue text-xs font-mono uppercase tracking-widest">
+          <i class="fa-solid fa-satellite-dish"></i>
+          <span>NASA Mission Archives</span>
+        </div>
+
+        <h1 class="font-nasa font-black text-4xl sm:text-6xl md:text-7xl leading-tight tracking-tight">
+          Space <span class="text-transparent bg-clip-text bg-gradient-to-r from-nasa-lightBlue via-white to-nasa-red text-glow-blue">Memory</span>
+        </h1>
+
+        <p class="text-lg sm:text-2xl text-blue-100/90 font-light max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+          Tiny pieces... Big stories... <br class="hidden sm:block">
+          <span class="text-nasa-lightBlue font-semibold">Lost in space, waiting to be found by you.</span>
+        </p>
+
+      
+
+        <div class="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+          <a href="journey.html" class="px-7 py-3 rounded-full bg-nasa-red hover:bg-nasa-darkRed text-white font-nasa font-bold tracking-wide shadow-lg shadow-nasa-red/30 transition-colors"><i class="fa-solid fa-rocket mr-2"></i>Start the journey</a>
+          <a href="comic.html" class="px-7 py-3 rounded-full nasa-glass hover:border-nasa-red/60 font-nasa font-semibold transition-colors"><i class="fa-solid fa-book-open mr-2"></i>Read the comic</a>
+        </div>
+        <div class="flex items-center justify-center lg:justify-start space-x-2 text-xs text-gray-400 font-mono">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>INTERACTIVE MAP READY</span>
+        </div>
+
+      </div>
+
+      <!-- Astronaut sitting on Moon vector graphic (Right Column) -->
+      <div class="lg:col-span-5 flex justify-center relative">
+        <div class="relative w-72 sm:w-96 h-72 sm:h-96 animate-float">
+          
+          <!-- Outer glowing orbital ring -->
+          <div class="absolute inset-0 rounded-full border border-nasa-lightBlue/30 animate-spin" style="animation-duration: 25s;"></div>
+          <div class="absolute inset-4 rounded-full border border-dashed border-nasa-red/30 animate-spin" style="animation-duration: 35s; animation-direction: reverse;"></div>
+
+          <!-- Stylized NASA Astronaut SVG -->
+          <svg class="w-full h-full drop-shadow-[0_10px_25px_rgba(0,114,206,0.4)]" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Moon Surface Rock Base -->
+            <path d="M 30 260 Q 150 210 270 260 L 280 300 L 20 300 Z" fill="#1e293b"/>
+            <circle cx="80" cy="265" r="12" fill="#0f172a" opacity="0.6"/>
+            <circle cx="190" cy="255" r="18" fill="#0f172a" opacity="0.6"/>
+            <circle cx="230" cy="275" r="8" fill="#0f172a" opacity="0.6"/>
+
+            <!-- Astronaut Body / Suit -->
+            <g transform="translate(100, 70)">
+              <!-- Backpack -->
+              <rect x="15" y="45" width="70" height="85" rx="16" fill="#e2e8f0"/>
+              <rect x="20" y="55" width="10" height="25" rx="3" fill="#0072CE"/>
+              <rect x="20" y="85" width="10" height="25" rx="3" fill="#FC3D21"/>
+
+              <!-- Suit Legs -->
+              <path d="M 30 120 L 15 175 L 45 180 L 52 130 Z" fill="#f8fafc"/>
+              <path d="M 70 120 L 85 175 L 55 180 L 48 130 Z" fill="#f8fafc"/>
+              <!-- Boots -->
+              <path d="M 10 170 C 10 165 45 165 45 185 L 10 185 Z" fill="#334155"/>
+              <path d="M 90 170 C 90 165 55 165 55 185 L 90 185 Z" fill="#334155"/>
+
+              <!-- Main Torso -->
+              <rect x="25" y="40" width="50" height="85" rx="18" fill="#ffffff"/>
+              <!-- NASA Chest Patch -->
+              <circle cx="40" cy="65" r="8" fill="#0B3D91"/>
+              <path d="M 34 65 L 46 65" stroke="#FC3D21" stroke-width="2"/>
+              <rect x="54" y="60" width="12" height="10" rx="2" fill="#3b82f6"/>
+
+              <!-- Arms -->
+              <path d="M 25 48 C 5 70 10 100 22 110" stroke="#ffffff" stroke-width="16" stroke-linecap="round" fill="none"/>
+              <path d="M 75 48 C 95 70 90 100 78 110" stroke="#ffffff" stroke-width="16" stroke-linecap="round" fill="none"/>
+
+              <!-- Helmet -->
+              <circle cx="50" cy="30" r="32" fill="#f1f5f9"/>
+              <!-- Helmet Visor reflecting deep space blue -->
+              <path d="M 28 20 C 28 8, 72 8, 72 20 C 72 42, 28 42, 28 20 Z" fill="#020514"/>
+              <path d="M 32 18 C 32 12, 68 12, 68 18 C 68 36, 32 36, 32 18 Z" fill="url(#visorGrad)"/>
+              <ellipse cx="42" cy="18" rx="6" ry="3" fill="#ffffff" opacity="0.7" transform="rotate(-20 42 18)"/>
+
+              <!-- Visor Gradient Definition -->
+              <defs>
+                <linearGradient id="visorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#0072CE"/>
+                  <stop offset="50%" stop-color="#0B3D91"/>
+                  <stop offset="100%" stop-color="#FC3D21"/>
+                </linearGradient>
+              </defs>
+            </g>
+          </svg>
+
+          <!-- Floating mini Earth graphic behind astronaut -->
+          <div class="absolute -top-4 -left-4 w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 via-emerald-500 to-indigo-900 shadow-lg shadow-blue-500/50 border border-blue-200/30 overflow-hidden animate-pulse">
+            <div class="w-full h-full opacity-40 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:8px_8px]"></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+</main>
+
+<script src="js/shared.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Memory — Quiz</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/tailwind-config.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Titillium+Web:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="quiz" class="bg-nasa-darkBg text-white font-sans overflow-x-hidden selection:bg-nasa-red selection:text-white">
+
+<canvas id="space-canvas"></canvas>
+
+<main class="relative z-10">
+  <section id="quiz" class="min-h-screen relative flex items-center justify-center px-6 py-24">
+    <div class="max-w-3xl w-full mx-auto text-center space-y-8">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-nasa-red/20 border border-nasa-red/50 text-nasa-red font-mono text-xs">
+        <span>04</span> — <span>MISSION CHECK ASSESSMENT</span>
+      </div>
+      <h2 class="font-nasa font-bold text-3xl sm:text-5xl text-white">Test Your NASA Knowledge</h2>
+      <p class="text-gray-300 max-w-lg mx-auto">Answer all 10 questions and check your final mission score.</p>
+      <div class="nasa-glass p-8 rounded-3xl border border-nasa-blue/40 shadow-2xl space-y-5 text-left">
+        <div class="flex items-center justify-between gap-4 text-xs font-mono">
+          <span class="text-gray-400">QUESTION <span id="quizQuestionNumber">1</span> / 10</span>
+          <span class="text-nasa-lightBlue">SCORE: <span id="quizScore">0</span></span>
+        </div>
+        <div class="w-full bg-slate-900/80 rounded-full h-2 overflow-hidden border border-slate-700">
+          <div id="quizProgress" class="bg-gradient-to-r from-nasa-blue via-nasa-lightBlue to-nasa-red h-full w-[10%] transition-all duration-300"></div>
+        </div>
+        <h3 id="quizQuestion" class="text-white text-lg sm:text-xl font-semibold leading-relaxed"></h3>
+        <div id="quizOptions" class="space-y-3"></div>
+        <div id="quizFeedback" class="hidden p-4 rounded-xl text-sm font-mono text-center"></div>
+        <div id="quizResult" class="hidden p-5 rounded-2xl bg-nasa-blue/20 border border-nasa-blue/50 text-center space-y-3">
+          <div class="text-xs font-mono tracking-widest text-nasa-lightBlue">MISSION RESULT</div>
+          <div id="quizResultScore" class="font-nasa font-black text-4xl text-white">0 / 10</div>
+          <p id="quizResultMessage" class="text-gray-300 text-sm"></p>
+          <button id="aiHelpButton" onclick="openAIForQuizHelp()" class="hidden mx-auto px-4 py-2 rounded-full bg-nasa-red/90 hover:bg-nasa-red text-white text-xs font-mono transition-all shadow-lg shadow-nasa-red/20">
+            <i class="fa-solid fa-robot mr-2"></i> Get AI Help With My Mistakes
+          </button>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <button id="nextQuestionBtn" onclick="nextQuizQuestion()" class="hidden px-6 py-3 rounded-full bg-nasa-blue hover:bg-nasa-lightBlue text-white font-nasa font-semibold transition-all">
+            Next Question <i class="fa-solid fa-arrow-right ml-2"></i>
+          </button>
+          <button id="restartQuizBtn" onclick="resetQuiz()" class="hidden px-6 py-3 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-nasa font-semibold transition-all">
+            <i class="fa-solid fa-rotate-right mr-2"></i> Try Again
+          </button>
+        </div>
+      </div>
+    <nav class="w-full max-w-5xl mx-auto mt-10 flex items-center justify-between gap-3 font-nasa text-sm" aria-label="Page navigation">
+      <a href="worlds.html" class="px-5 py-2.5 rounded-full nasa-glass hover:border-nasa-red/60 transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Worlds</a>
+      <a href="comic.html" class="px-5 py-2.5 rounded-full bg-nasa-blue hover:bg-nasa-lightBlue font-semibold transition-colors">Comic<i class="fa-solid fa-arrow-right ml-2"></i></a>
+    </nav>
+    </div>
+  </section>
+</main>
+
+<button id="nasaAiFab" type="button" aria-label="Toggle NASA AI Assistant" class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-nasa-red hover:bg-nasa-red/90 text-white shadow-lg shadow-nasa-red/30 transition-all">
+  <i class="fa-solid fa-robot text-xl"></i>
+</button>
+<div id="nasaAiPanel" class="hidden fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-96 h-[min(32rem,65vh)] nasa-glass rounded-2xl border border-nasa-blue/40 shadow-2xl overflow-hidden">
+  <div class="flex flex-col h-full">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-slate-700/80">
+      <div class="font-nasa font-semibold text-sm"><i class="fa-solid fa-robot text-nasa-lightBlue mr-2"></i>NASA AI Assistant</div>
+      <button id="nasaAiClose" type="button" aria-label="Close AI panel" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="nasaAiMessages" class="flex-1 overflow-y-auto p-3 flex flex-col gap-2 text-sm"></div>
+    <div id="nasaAiChips" class="px-3 pb-2 flex flex-wrap gap-2 text-xs font-mono"></div>
+    <div class="p-3 border-t border-slate-700/80 flex gap-2">
+      <input id="nasaAiInput" type="text" autocomplete="off" placeholder="Ask about Viking, Ingenuity, Kepler, Apollo 12..." class="flex-1 min-w-0 px-3 py-2 rounded-full bg-slate-900/80 border border-slate-700 focus:border-nasa-blue outline-none text-sm text-white">
+      <button id="nasaAiSend" type="button" aria-label="Send question" class="px-4 py-2 rounded-full bg-nasa-blue hover:bg-nasa-lightBlue text-white text-sm"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
+<script src="js/shared.js"></script>
+<script>
+// Questions come from code 3. In the bank the CORRECT answer is always listed first;
+// buildQuiz() shuffles the options so the right answer is not always in the same place.
+const QUIZ_BANK = [
+  { question: "When did the Viking 1 lander touch down on Mars?",
+    options: ["July 20, 1976", "Sept 3, 1976", "April 19, 2021", "March 6, 2009"],
+    help: "Viking 1 landed July 20, 1976 in Chryse Planitia." },
+  { question: "Where did Viking 2 land?",
+    options: ["Utopia Planitia", "Jezero Crater", "Cygnus constellation", "Chryse Planitia"],
+    help: "Viking 2 landed at Utopia Planitia, near the polar ice cap." },
+  { question: "What powered the Viking landers?",
+    options: ["Two SNAP-19 RTGs each", "Only solar panels", "Lithium-ion batteries only", "Sunlight pressure"],
+    help: "Landers used 2 SNAP-19 RTGs each. Orbiters were solar-powered." },
+  { question: "How many flights did Ingenuity complete?",
+    options: ["72 flights", "5 flights", "19 flights", "52,663 flights"],
+    help: "Designed for only 5 flights, Ingenuity flew 72 flights." },
+  { question: "When was Ingenuity's first powered flight?",
+    options: ["April 19, 2021", "Feb 18, 2021", "Jan 18, 2024", "July 30, 2020"],
+    help: "April 19, 2021 - first powered, controlled flight on another planet." },
+  { question: "How did Kepler detect exoplanets?",
+    options: ["By transit - tiny dips in star brightness", "By landing on stars", "By taking soil samples", "By using a helicopter"],
+    help: "When a planet crosses in front of its star, the star's brightness dips slightly." },
+  { question: "What ended Kepler's original mission in May 2013?",
+    options: ["Loss of its 2nd reaction wheel", "Running out of RTG power", "A faulty command", "A leak in the orbiter"],
+    help: "Kepler needed 3 of its 4 reaction wheels to point precisely." },
+  { question: "When did the Apollo 12 lunar module Intrepid land on the Moon?",
+    options: ["19 November 1969 at 06:54:35 UT", "20 July 1969", "19 April 2021", "6 March 2009"],
+    help: "Intrepid landed 19 November 1969 at 06:54:35 UT in Oceanus Procellarum, close to Surveyor 3." },
+  { question: "Which Apollo 12 astronaut stayed in lunar orbit while the other two walked on the Moon?",
+    options: ["Richard Gordon", "Pete Conrad", "Alan Bean", "Neil Armstrong"],
+    help: "Richard Gordon piloted the Command/Service Module in orbit while Pete Conrad and Alan Bean walked on the Moon." },
+  { question: "What was ALSEP?",
+    options: ["Apollo Lunar Surface Experiments Package - science instruments left on the Moon", "A helicopter on Mars", "A planet-hunting telescope", "A Viking biology lab"],
+    help: "ALSEP was a set of instruments (seismometer, magnetometer, dust detector and more) that Conrad and Bean left running on the Moon, powered by a SNAP-27 RTG." }
+];
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function buildQuiz() {
+  return QUIZ_BANK.map(item => {
+    const correct = item.options[0];
+    const options = shuffle(item.options.slice());
+    return { question: item.question, options, answer: options.indexOf(correct), help: item.help };
+  });
+}
+
+let quizQuestions = buildQuiz();
+
+let currentQuizQuestion = 0;
+let quizScore = 0;
+let quizWrongCount = 0;
+let quizAnswered = false;
+let quizWrongTopics = [];
+
+function renderQuizQuestion() {
+  const q = quizQuestions[currentQuizQuestion];
+  const optionsContainer = document.getElementById('quizOptions');
+  const feedback = document.getElementById('quizFeedback');
+  const result = document.getElementById('quizResult');
+  const nextBtn = document.getElementById('nextQuestionBtn');
+  const restartBtn = document.getElementById('restartQuizBtn');
+
+  document.getElementById('quizQuestionNumber').textContent = currentQuizQuestion + 1;
+  document.getElementById('quizQuestion').textContent = q.question;
+  document.getElementById('quizProgress').style.width = (((currentQuizQuestion + 1) / quizQuestions.length) * 100) + '%';
+
+  optionsContainer.innerHTML = '';
+  q.options.forEach((optionText, index) => {
+    const button = document.createElement('button');
+    button.className = 'w-full p-4 rounded-xl bg-slate-900/80 hover:bg-nasa-blue/20 border border-slate-700 hover:border-nasa-blue text-left transition-all text-sm font-medium flex items-center justify-between group';
+    button.innerHTML = `<span>${optionText}</span><i class="fa-regular fa-circle text-gray-500 group-hover:text-nasa-lightBlue"></i>`;
+    button.onclick = () => checkQuiz(button, index === q.answer);
+    optionsContainer.appendChild(button);
+  });
+
+  feedback.className = 'hidden p-4 rounded-xl text-sm font-mono text-center';
+  feedback.textContent = '';
+  result.classList.add('hidden');
+  nextBtn.classList.add('hidden');
+  restartBtn.classList.add('hidden');
+  document.getElementById('aiHelpButton').classList.add('hidden');
+  quizAnswered = false;
+}
+
+function checkQuiz(button, isCorrect) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+
+  const options = document.getElementById('quizOptions').children;
+  const feedback = document.getElementById('quizFeedback');
+  const q = quizQuestions[currentQuizQuestion];
+
+  for (const btn of options) {
+    btn.disabled = true;
+    btn.classList.add('opacity-50');
+  }
+
+  if (isCorrect) {
+    quizScore++;
+    button.classList.remove('opacity-50', 'bg-slate-900/80', 'border-slate-700');
+    button.classList.add('bg-emerald-500/20', 'border-emerald-500', 'text-emerald-300');
+    feedback.className = 'p-4 rounded-xl text-sm font-mono text-center bg-emerald-500/20 border border-emerald-500 text-emerald-300';
+    feedback.innerHTML = '<i class="fa-solid fa-circle-check mr-2"></i><b>CORRECT!</b> Great job, Explorer.';
+  } else {
+    quizWrongCount++;
+    quizWrongTopics.push(q);
+    button.classList.remove('opacity-50', 'bg-slate-900/80', 'border-slate-700');
+    button.classList.add('bg-nasa-red/20', 'border-nasa-red', 'text-nasa-red');
+
+    Array.from(options).forEach((btn, index) => {
+      if (index === q.answer) {
+        btn.classList.remove('opacity-50', 'bg-slate-900/80', 'border-slate-700');
+        btn.classList.add('bg-emerald-500/10', 'border-emerald-500/60', 'text-emerald-300');
+      }
+    });
+
+    feedback.className = 'p-4 rounded-xl text-sm font-mono text-center bg-nasa-red/20 border border-nasa-red text-nasa-red';
+    feedback.innerHTML = `<i class="fa-solid fa-circle-xmark mr-2"></i><b>INCORRECT.</b> ${q.help}`;
+  }
+
+  document.getElementById('quizScore').textContent = quizScore;
+
+  if (!isCorrect && quizWrongCount === 4) openAIForQuizHelp(true);
+
+  const nextBtn = document.getElementById('nextQuestionBtn');
+  if (currentQuizQuestion < quizQuestions.length - 1) {
+    nextBtn.classList.remove('hidden');
+  } else {
+    showQuizResult();
+  }
+}
+
+function nextQuizQuestion() {
+  if (!quizAnswered || currentQuizQuestion >= quizQuestions.length - 1) return;
+  currentQuizQuestion++;
+  renderQuizQuestion();
+}
+
+function showQuizResult() {
+  document.getElementById('quizResultScore').textContent = `${quizScore} / ${quizQuestions.length}`;
+  const messageEl = document.getElementById('quizResultMessage');
+  const aiHelpButton = document.getElementById('aiHelpButton');
+  const restartBtn = document.getElementById('restartQuizBtn');
+
+  if (quizScore === quizQuestions.length) {
+    messageEl.textContent = 'Perfect mission! You answered every question correctly.';
+  } else if (quizScore >= quizQuestions.length * 0.6) {
+    messageEl.textContent = 'Mission completed! Review the questions you missed to strengthen your knowledge.';
+  } else {
+    messageEl.textContent = 'Mission complete. Review the explanations and try again.';
+  }
+
+  document.getElementById('quizResult').classList.remove('hidden');
+  restartBtn.classList.remove('hidden');
+
+  if (quizWrongCount >= 4) {
+    aiHelpButton.classList.remove('hidden');
+  }
+}
+
+function resetQuiz() {
+  currentQuizQuestion = 0;
+  quizScore = 0;
+  quizWrongCount = 0;
+  quizAnswered = false;
+  quizWrongTopics = [];
+  quizQuestions = buildQuiz();
+  document.getElementById('quizScore').textContent = '0';
+  renderQuizQuestion();
+}
+
+renderQuizQuestion();
+
+function openAIForQuizHelp(auto) {
+  const uniqueMistakes = [...new Map(quizWrongTopics.map(q => [q.question, q])).values()];
+  NasaAI.open(!auto);
+  if (!uniqueMistakes.length) return;
+  const html = uniqueMistakes.map((q, i) => `${i + 1}. <b>${q.question}</b><br>${q.help}`).join('<br><br>');
+  NasaAI.say(`Let's learn from your mistakes:<br><br>${html}<br><br>Ask me about any of these missions in your own words.`);
+}
+</script>
+<script>
+const NasaAI = (() => {
+// ============================================================
+// DATA FROM CODE 3 (unchanged)
+// ============================================================
+const KNOWLEDGE = [
+// --- OVERVIEWS - FIX: explain + mission name alone works ---
+{id:"viking_overview", mission:"Viking", concepts:["viking"], answer:"Viking 1 and Viking 2 were NASA orbiter + lander missions to Mars in 1976.", explanation:"Viking 1 launched Aug 20, 1975 and landed July 20, 1976 in Chryse Planitia. Viking 2 launched Sept 9, 1975 and landed Sept 3, 1976 in Utopia Planitia. Together they mapped 97% of Mars with 52,663 images. Landers returned 4,500 photos. Biology results were inconclusive, no organics found. Landers used 2 SNAP-19 RTGs each, orbiters were solar-powered."},
+{id:"ingenuity_overview", mission:"Ingenuity", concepts:["ingenuity","helicopter"], answer:"Ingenuity was the first helicopter to fly on another planet.", explanation:"First flight April 19, 2021 - first powered, controlled flight on another planet, called a Wright Brothers moment. It completed 72 flights (designed for only 5), 128.8 flying minutes, 10.5 miles (17.0 km), up to 78.7 feet (24.0 m) altitude. It launched July 30, 2020 and landed Feb 18, 2021 in Jezero Crater with Perseverance. Mass 3.97 pounds (1.8 kg), rotor span just under 4 feet (1.2 m)."},
+{id:"kepler_overview", mission:"Kepler", concepts:["kepler"], answer:"Kepler was NASA's first planet-hunting telescope, launched March 6, 2009.", explanation:"It found planets by transit - tiny dips in star brightness when a planet crosses in front of its star. It stared at 150,000 stars in Cygnus. Its mirror was 4 feet 7 inches (1.4 m). In May 2013 it lost its 2nd reaction wheel, became K2, and retired Oct 30, 2018. It proved 20-50% of visible stars likely have small rocky planets in the habitable zone."},
+// --- VIKING 1 ---
+{id:"v1_land", mission:"Viking 1", concepts:["viking1","viking","land","landing","touchdown","arrive","arrived","surface","chryse","date","when"], answer:"Viking 1 landed on July 20, 1976.", explanation:"It landed in Chryse Planitia at 22.483°N, 47.94°W, about 17 miles from its planned target. It was the first truly successful landing on Mars - Soviet Mars 3 in 1971 lost contact seconds after landing. Viking 1 worked until Nov 11, 1982 and was renamed Thomas Mutch Memorial Station."},
+{id:"v1_launch", mission:"Viking 1", concepts:["viking1","viking","launch","launched","lift","off","start","begin","titan","cape"], answer:"Viking 1 launched on August 20, 1975.", explanation:"It launched on a Titan IIIE-Centaur from Cape Canaveral, Launch Complex 41. It entered Mars orbit on June 19, 1976. Its spacecraft name was Viking-B."},
+{id:"v1_end", mission:"Viking 1", concepts:["viking1","viking","end","stop","stopped","shutdown","shut","down","die","died","last","faulty","command"], answer:"Viking 1 orbiter ended Aug 7, 1980. Lander ended Nov 11, 1982.", explanation:"Orbiter ran out of attitude-control propellant on its 1,489th orbit. Lander stopped after a faulty command from Earth interrupted communications."},
+{id:"v1_life", mission:"Viking 1", concepts:["viking1","viking","life","biology","biological","soil","organic","organics","alive","exist"], answer:"Viking 1 biology results were inconclusive - weak positive, but no organics found.", explanation:"Four soil samples gave results that could look like life, but the Gas Chromatograph Mass Spectrometer found no organic compounds above 10-100 parts per billion. Scientists think UV-created reactants in Martian soil mimicked life. Temperatures were -86°C before dawn to -33°C in afternoon."},
+// --- VIKING 2 ---
+{id:"v2_land", mission:"Viking 2", concepts:["viking2","viking","land","landing","touchdown","arrive","arrived","surface","utopia","date","when"], answer:"Viking 2 landed on September 3, 1976 at Utopia Planitia.", explanation:"It landed at 47.968°N, 225.71°W, about 4,000 miles (6,460 km) from Viking 1. The site was rockier and flatter, near the polar ice cap where water was, to increase chance of finding life. The lander tilted 8.5 degrees west."},
+{id:"v2_launch", mission:"Viking 2", concepts:["viking2","viking","launch","launched","lift","start","begin","battery","batteries"], answer:"Viking 2 launched on September 9, 1975.", explanation:"It was originally scheduled to launch first as Viking-A, but battery problems delayed it, so it launched second and was renamed Viking 2. It entered Mars orbit Aug 7, 1976."},
+{id:"v2_end", mission:"Viking 2", concepts:["viking2","viking","end","stop","stopped","shutdown","shut","leak","leaks","soffen","memorial"], answer:"Viking 2 orbiter ended July 24, 1978. Lander ended April 12, 1980.", explanation:"Leaks ended orbiter operations. Lander kept transmitting until 1980. In July 2001 it was renamed Gerald Soffen Memorial Station."},
+{id:"viking_both", mission:"Viking 1 & 2", concepts:["viking","both","together","images","photos","pictures","mapped","map","mapping","97","percent","mass","weight","power","rtg","solar"], answer:"Together Viking orbiters returned 52,663 images and mapped about 97% of Mars.", explanation:"Mapping resolution was 984 feet (300 meters). Landers returned 4,500 photos. Each spacecraft mass was 7,776 pounds (3,527 kg). Landers used 2 SNAP-19 RTGs each, orbiters were solar-powered."},
+// --- INGENUITY ---
+{id:"ing_first", mission:"Ingenuity", concepts:["ingenuity","helicopter","first","flight","fly","flew","wright","brothers","moment","powered","controlled","april"], answer:"Ingenuity's first flight was April 19, 2021.", explanation:"It was the first powered, controlled flight on another planet - called a Wright Brothers moment. It flew after riding to Mars strapped beneath Perseverance rover."},
+{id:"ing_flights", mission:"Ingenuity", concepts:["ingenuity","helicopter","flights","how","many","times","fly","flew","72","total","minutes","distance","altitude","high","far"], answer:"Ingenuity completed 72 flights.", explanation:"It was designed for only 5 test flights in 30 days, but flew 72 flights over nearly 3 years. Total: 128.8 flying minutes, 10.5 miles (17.0 km), up to 78.7 feet (24.0 m) altitude."},
+{id:"ing_end", mission:"Ingenuity", concepts:["ingenuity","helicopter","end","last","final","stop","stopped","mission","completed","january"], answer:"Ingenuity flew last on Jan 18, 2024. Mission completed Jan 25, 2024.", explanation:"After the tech demo, it became an operations demonstration scouting for Perseverance, then an engineering demonstration testing aerodynamic limits."},
+{id:"ing_land", mission:"Ingenuity", concepts:["ingenuity","helicopter","launch","launched","land","landed","landing","jezero","crater","perseverance","arrive"], answer:"Ingenuity launched July 30, 2020 and landed Feb 18, 2021 in Jezero Crater.", explanation:"It launched from Cape Canaveral Air Force Station, Florida, with Perseverance rover."},
+{id:"ing_specs", mission:"Ingenuity", concepts:["ingenuity","helicopter","mass","weight","size","big","small","rotor","blade","span","power","solar","battery","atmosphere","thin","dense"], answer:"Ingenuity mass was 3.97 pounds (1.8 kg), rotor span just under 4 feet (1.2 m).", explanation:"Solar panel charges lithium-ion batteries for one 90-second flight per Martian day, about 350 Watts during flight. Flight range up to 980 feet (300 m). It flew in atmosphere less than 1% as dense as Earth's."},
+// --- KEPLER ---
+{id:"kepler_launch", mission:"Kepler", concepts:["kepler","launch","launched","start","begin","march","2009","telescope"], answer:"Kepler launched on March 6, 2009.", explanation:"It was NASA's first planet-hunting mission, designed to find Earth-size planets in habitable zones. It stared at 150,000 stars in Cygnus. Its mirror was 4 feet 7 inches (1.4 m)."},
+{id:"kepler_how", mission:"Kepler", concepts:["kepler","how","find","found","detect","discover","discovered","method","transit","brightness","dip","dips","dim","planet","exoplanet"], answer:"Kepler found planets by transit - tiny dips in star brightness.", explanation:"When a planet crosses in front of its star, the star dims slightly. By measuring that dip repeatedly, Kepler could find the planet size and orbit."},
+{id:"kepler_fail", mission:"Kepler", concepts:["kepler","fail","failed","stop","stopped","broke","broken","wheel","reaction","gyroscope","2013","problem","point","pointing"], answer:"In May 2013 Kepler lost its 2nd of 4 reaction wheels, ending the original mission.", explanation:"It needed 3 wheels to point precisely. Without the 3rd wheel, sunlight pressure pushed it. Engineers then used sunlight pressure itself to stabilize it - like a kayak steering into current. That became K2."},
+{id:"kepler_k2", mission:"Kepler", concepts:["kepler","k2","second","extended","campaign","campaigns","ecliptic","sky","swath"], answer:"K2 scanned along the ecliptic plane in campaigns of about 3 months each.", explanation:"It was expected to do 10 campaigns, it did 19. K2 raised surveyed stars to over 500,000 and studied supernovae, black holes and solar system objects."},
+{id:"kepler_end", mission:"Kepler", concepts:["kepler","end","retire","retired","finish","finished","fuel","2018","october","tess"], answer:"Kepler retired on October 30, 2018 after running out of fuel.", explanation:"It was succeeded by TESS, launched April 2018, which surveys 200,000 bright nearby stars. Kepler data will be studied for a decade or more."},
+{id:"kepler_habitable", mission:"Kepler", concepts:["kepler","habitable","habitability","water","liquid","percent","earth","neptune","size","common","everywhere","rocky"], answer:"20-50% of visible stars likely have small rocky planets in habitable zone.", explanation:"Habitable zone = distance where liquid water could pool on surface. Most common Kepler planet size is between Earth and Neptune - a size that does not exist in our solar system."},
+// --- APOLLO 12 INTREPID - 1969-099C (source: NASA NSSDCA) ---
+{id:"apollo_overview", mission:"Apollo 12 - Intrepid", concepts:["apollo","intrepid","lm","lunar","module"], answer:"Apollo 12 Lunar Module 'Intrepid' (1969-099C) was the second crewed vehicle to land on the Moon.", explanation:"It landed 19 November 1969 at 06:54:35 UT in Oceanus Procellarum (Ocean of Storms), within about 180 meters of the Surveyor 3 spacecraft. Crew: Pete Conrad (Commander) and Alan Bean (LM Pilot) walked on the Moon while Richard Gordon stayed in lunar orbit in the Command/Service Module. They made two moonwalks (7 hours 45 minutes total), collected 34.35 kg of rock and soil, deployed the ALSEP science station, and brought back about 10 kg of parts from Surveyor 3. They spent 31 hours 31 minutes on the surface."},
+{id:"apollo_what", mission:"Apollo 12 - Intrepid (1969-099C)", concepts:["apollo","apollo12","intrepid","lm","lm6","lunar","module","1969","099c","what","which","spacecraft","second"], answer:"Apollo 12 Lunar Module 'Intrepid' (ID 1969-099C, also called LM-6) was the second crewed vehicle to land on the Moon.", explanation:"It carried Commander Charles P. 'Pete' Conrad and LM pilot Alan L. Bean, the third and fourth men to walk on the Moon. Richard F. Gordon stayed in orbit in the Command/Service Module. The LM also carried the Apollo Lunar Surface Experiments Package (ALSEP) and sample collection apparatus. It launched on 14 November 1969 on a Saturn 5."},
+{id:"apollo_land", mission:"Apollo 12 - Intrepid", concepts:["module","apollo","intrepid","lm","land","landing","touchdown","arrive","arrived","moon","lunar","surface","oceanus","procellarum","ocean","storms","when","date","where","place","location","coordinates"], answer:"Intrepid landed on 19 November 1969 at 06:54:35 UT in Oceanus Procellarum (Ocean of Storms).", explanation:"Landing coordinates: about 3.0128°S, 23.4219°W. It separated from the Command/Service Module at 04:16:03 UT. It touched down within about 180 meters of Surveyor 3, which had landed on 20 April 1967."},
+{id:"apollo_crew", mission:"Apollo 12 - Intrepid", concepts:["lunar","module","apollo","intrepid","crew","astronaut","astronauts","who","conrad","pete","bean","alan","gordon","richard","commander","pilot","csm","command","service","yankee","clipper"], answer:"Crew: Pete Conrad (Commander), Alan Bean (LM Pilot), Richard Gordon (CSM Pilot).", explanation:"Conrad and Bean landed in Intrepid and walked on the Moon - the third and fourth men to do so. Gordon stayed alone in the Command/Service Module (Yankee Clipper) orbiting the Moon, and docked with Intrepid after liftoff."},
+{id:"apollo_walks", mission:"Apollo 12 - Intrepid", concepts:["lunar","module","apollo","intrepid","walk","walks","walked","moonwalk","moonwalks","eva","step","foot","traverse","kilometer","km","two","first","second","hours","distance","far"], answer:"Conrad and Bean made two moonwalks totaling 7 hours 45 minutes.", explanation:"The first walk (19 Nov, 11:32:35 to 15:28:38 UT) covered sample collection near the LM and deploying the ALSEP and the solar wind foil collector. The second (20 Nov, 03:54:45 to 07:44:00 UT) was a 1.3 km geology traverse that included a visit to Surveyor 3. Total traverse distance: 1.35 km."},
+{id:"apollo_surveyor", mission:"Apollo 12 - Intrepid", concepts:["lunar","module","apollo","intrepid","surveyor","surveyor3","parts","pinpoint","precision","precise","close","near","1967","probe","visit","visited","bring","brought"], answer:"Intrepid landed within about 180 meters of Surveyor 3, and the crew brought back about 10 kg of its parts.", explanation:"Surveyor 3 was an uncrewed lander that touched down on 20 April 1967. Conrad and Bean visited it on the second moonwalk so its parts could be examined on Earth after more than two years on the Moon."},
+{id:"apollo_stay", mission:"Apollo 12 - Intrepid", concepts:["lunar","module","apollo","intrepid","stay","stayed","long","duration","hours","liftoff","lift","off","leave","left","surface","time"], answer:"Intrepid stayed on the lunar surface for 31 hours 31 minutes.", explanation:"The LM lifted off at 14:25:47 UT on 20 November 1969 (9:25 a.m. EST). The ascent stage returned the astronauts to the Command/Service Module, which Intrepid docked with at 17:58:22 UT."},
+{id:"apollo_samples", mission:"Apollo 12 - Intrepid", concepts:["lunar","module","apollo","intrepid","sample","samples","rock","rocks","soil","collect","collected","kg","kilogram","regolith","foil","solar","wind"], answer:"They collected 34.35 kg of lunar rock and soil.", explanation:"They also collected the solar wind composition foil and about 10 kg of Surveyor 3 parts. Other experiments included surface photography and soil mechanics investigations to study the physical properties of the lunar regolith."},
+{id:"apollo_tv", mission:"Apollo 12 - Intrepid", concepts:["lunar","module","apollo","intrepid","tv","camera","television","video","sun","vidicon","damaged","broken","problem","pointed"], answer:"The Apollo 12 TV camera was damaged when it was pointed at the Sun.", explanation:"During setup on the first moonwalk the camera was inadvertently pointed toward the Sun, which damaged its vidicon tube and left the camera inoperable."},
+{id:"apollo_fate", mission:"Apollo 12 - Intrepid", concepts:["lunar","module","apollo","intrepid","fate","after","docking","docked","jettison","jettisoned","crash","crashed","crashing","moonquake","artificial","impact","seismic","what","happened","end"], answer:"After docking with the CSM at 17:58:22 UT on 20 November, Intrepid was jettisoned at 20:21:30 UT and intentionally crashed into the Moon.", explanation:"It struck the surface at about 3.94°S, 338.80°E, roughly 60 km from the Apollo 12 seismic station, creating the first recorded artificial moonquake."},
+{id:"apollo_mass", mission:"Apollo 12 - Intrepid", concepts:["lunar","module","apollo","intrepid","mass","weight","kg","heavy","descent","ascent","stage","stages","two","structure","legs","footpads","engine","thrust","batteries"], answer:"Total LM mass was 15,235 kg including propellants.", explanation:"Ascent stage dry mass 2,383 kg + 2,375 kg propellant. Descent stage dry mass 2,118 kg + 8,359 kg propellant. Descent stage was an octagonal prism 4.2 m across, 1.7 m thick, with 4 landing legs, footpads 9.4 m apart. Ascent stage was ~2.8 m high, crew compartment volume 6.65 cubic meters, with NO seats. Descent engine thrust ~45,000 N, ascent engine ~15,000 N. Power: 6 silver-zinc batteries."},
+{id:"apollo_alsep", mission:"Apollo 12 - Intrepid", concepts:["lunar","module","apollo","intrepid","alsep","experiment","experiments","package","instruments","instrument","seismometer","seismic","dust","detector","magnetometer","spectrometer","ion","gauge","central","station","deployed","shutdown","1977"], answer:"ALSEP = Apollo Lunar Surface Experiments Package, a set of science instruments Conrad and Bean left running on the Moon.", explanation:"Its six instruments: passive seismometer, suprathermal ion detector, cold cathode ion gauge, lunar dust detector, lunar surface magnetometer and solar wind spectrometer. They were connected to a 25 kg central station that sent data to Earth. The station was turned on at 14:21 UT on 19 November 1969 and shut down on 30 September 1977 along with the other ALSEP stations."},
+{id:"apollo_rtg", mission:"Apollo 12 - Intrepid", concepts:["lunar","module","apollo","intrepid","rtg","snap","27","plutonium","plutonium238","generator","nuclear","watts","power","powered","fuel"], answer:"The ALSEP was powered by a SNAP-27 radioisotope thermoelectric generator (RTG).", explanation:"The RTG had a mass of 17 kg and used a roughly 4 kg plutonium-238 fuel capsule that the astronauts placed in it on deployment. It produced about 70 W DC at 16 V (63.5 W after one year). Plutonium-238 has a half-life of 89.6 years."}
+];
+
+const SYN = {
+  touchdown:["land","landing","arrive","arrived","surface"], landed:["land","landing","touchdown"], flew:["flight","fly","flights"],
+  discovered:["find","found","detect","detected"], stopped:["end","ended","finish","finished","stop"], broke:["fail","failed","problem"],
+  planets:["exoplanet","exoplanets","world","worlds"], helicopter:["ingenuity"], telescope:["kepler"],
+  moon:["lunar"], walked:["step","walk","foot"], intrepid:["apollo","lm","lunar","module"], apollo12:["apollo","intrepid"]
+};
+
+// ===== ENGINE START =====
+const STOP = new Set(["what","when","where","how","did","does","do","is","was","were","the","a","an","tell","me","about","please","can","you","i","want","know","explain","describe","give","info","information","details","detail"]);
+const NAME_WORDS = new Set(["viking","viking1","viking2","ingenuity","helicopter","kepler","telescope","apollo","apollo12","intrepid","099c","1969"]);
+
+function normalize(t) {
+  return t.toLowerCase()
+    .replace(/viking[\s-]*([12])\b/g, "viking$1")
+    .replace(/apollo[\s-]*12\b/g, "apollo12")
+    .replace(/[^a-z0-9 ]/g, " ").split(/\s+/)
+    .filter(w => w.length > 1 && !STOP.has(w));
+}
+
+function expand(words) {
+  const out = [...words];
+  words.forEach(w => {
+    if (SYN[w]) out.push(...SYN[w]);
+    if (w === "viking1" || w === "viking2") out.push("viking");
+    if (w === "apollo12" || w === "099c") out.push("apollo", "intrepid");
+    const stem = w.replace(/(ed|ing|es|s)$/, "");      // planets -> planet, detected -> detect
+    if (stem.length >= 3 && stem !== w) out.push(stem);
+  });
+  return [...new Set(out)];
+}
+
+// Score records by concept matches. Needs at least one real topic word (not just a mission name).
+function pick(list, words, typed) {
+  let best = null, top = 0, ties = 0;
+  list.forEach(f => {
+    let sc = 0, detail = 0;
+    f.concepts.forEach(c => { if (words.includes(c)) { sc += 3; if (typed.includes(c)) sc += 1; if (!NAME_WORDS.has(c)) detail++; } });
+    if (!detail) return;
+    if (sc > top) { top = sc; best = f; ties = 1; } else if (sc === top) ties++;
+  });
+  if (top >= 6) return best;
+  return (top >= 3 && ties === 1) ? best : null;   // one clear match on a single keyword (e.g. "ALSEP")
+}
+
+function findBest(raw) {
+  const base = normalize(raw);
+  if (!base.length) return null;
+  const words = expand(base);
+  const has = w => words.includes(w);
+  const only = names => base.every(w => names.includes(w));
+  const byId = id => KNOWLEDGE.find(f => f.id === id);
+  const detail = f => !f.id.endsWith("_overview");
+  const vikingOK = f => !(has("viking2") && f.id.startsWith("v1_")) && !(has("viking1") && f.id.startsWith("v2_"));
+  const short = base.length <= 3;
+
+  if (has("apollo") || has("intrepid")) {
+    if (only(["apollo","apollo12","intrepid","099c","1969"])) return byId("apollo_overview");
+    return pick(KNOWLEDGE.filter(f => f.id.startsWith("apollo_") && detail(f)), words, base) || byId("apollo_overview");
+  }
+  if (has("viking")) {
+    if (only(["viking","viking1","viking2"])) return byId("viking_overview");
+    const d = pick(KNOWLEDGE.filter(f => /^(v1_|v2_|viking_both)/.test(f.id) && vikingOK(f)), words, base);
+    if (d) return d;
+    if (short) return byId("viking_overview");
+  }
+  if (has("ingenuity")) {
+    if (only(["ingenuity","helicopter"])) return byId("ingenuity_overview");
+    const d = pick(KNOWLEDGE.filter(f => f.id.startsWith("ing_")), words, base);
+    if (d) return d;
+    if (short) return byId("ingenuity_overview");
+  }
+  if (has("kepler")) {
+    if (only(["kepler","telescope"])) return byId("kepler_overview");
+    const d = pick(KNOWLEDGE.filter(f => f.id.startsWith("kepler_") && detail(f)), words, base);
+    if (d) return d;
+    if (short) return byId("kepler_overview");
+  }
+  return pick(KNOWLEDGE.filter(f => detail(f) && vikingOK(f)), words, base);
+}
+// ===== ENGINE END =====
+
+// ============================================================
+// CHAT PANEL
+// ============================================================
+const $ = id => document.getElementById(id);
+const panel = $("nasaAiPanel"), box = $("nasaAiMessages"), input = $("nasaAiInput");
+
+function say(html) { add("bot", html, true); }
+function add(who, content, isHtml) {
+  const d = document.createElement("div");
+  d.className = who === "user"
+    ? "self-end max-w-[85%] px-3 py-2 rounded-xl bg-nasa-blue text-white"
+    : "self-start max-w-[92%] px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-gray-200 leading-relaxed";
+  if (isHtml) d.innerHTML = content; else d.textContent = content;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+
+function reply(q) {
+  if (/^(hi|hello|hey)\b/.test(q.toLowerCase())) {
+    return "Hi! Ask me anything about Viking, Ingenuity, Kepler, or Apollo 12 Intrepid.";
+  }
+  if (/apollo[\s-]*11\b|\beagle\b/i.test(q)) {
+    return "This page covers <b>Apollo 12</b> (lunar module <b>Intrepid</b>), not Apollo 11. Try <b>explain apollo</b>.";
+  }
+  const r = findBest(q);
+  if (r) {
+    return `<b>[${r.mission}] ${r.answer}</b><br><br><i class="fa-solid fa-lightbulb text-yellow-400 mr-1"></i><b>Explanation:</b> ${r.explanation}`;
+  }
+  return `I don't have that exact detail in these 5 NASA pages.<br><br>Try:<br>• explain apollo / explain kepler / explain viking / explain ingenuity<br>• apollo / intrepid: landing, crew, moonwalks, Surveyor 3, samples, ALSEP, mass, fate<br>• viking: landing, launch, end, life<br>• ingenuity: flights, first flight, specs<br>• kepler: launch, how it found planets, why it stopped, K2`;
+}
+
+function ask(text) {
+  const q = (text || "").trim();
+  if (!q) return;
+  add("user", q);
+  input.value = "";
+  setTimeout(() => say(reply(q)), 300);
+}
+
+function open(focus) { panel.classList.remove("hidden"); if (focus) input.focus(); }
+function close() { panel.classList.add("hidden"); }
+
+say(`Hi! I'm your NASA AI Assistant. I know <b>Viking 1, Viking 2, Ingenuity, Kepler and Apollo 12 Intrepid</b>. Ask in your own words, for example <b>explain apollo</b>.`);
+["explain apollo", "explain kepler", "explain viking", "explain ingenuity", "what is ALSEP"].forEach(t => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = t;
+  b.className = "px-3 py-1 rounded-full bg-slate-900/80 border border-slate-700 hover:border-nasa-blue text-nasa-lightBlue";
+  b.onclick = () => ask(t);
+  $("nasaAiChips").appendChild(b);
+});
+$("nasaAiSend").onclick = () => ask(input.value);
+input.addEventListener("keydown", e => { if (e.key === "Enter") ask(input.value); });
+$("nasaAiClose").onclick = close;
+$("nasaAiFab").onclick = () => panel.classList.contains("hidden") ? open(true) : close();
+
+return { open, close, say, ask, findBest };
+})();
+</script>
+</body>
+</html>

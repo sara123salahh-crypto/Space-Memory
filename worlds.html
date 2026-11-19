@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Memory — Worlds</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/tailwind-config.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Titillium+Web:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+.hs-ship{transition:transform .45s cubic-bezier(.2,.9,.3,1.2)}
+.hs-ship svg{filter:drop-shadow(0 0 10px currentColor);transition:scale .2s}
+button:hover .hs-ship svg{scale:1.12}
+.hs-bob{animation:hsBob 3.5s ease-in-out infinite}
+@keyframes hsBob{50%{translate:0 -7px}}
+@media(prefers-reduced-motion:reduce){.hs-bob{animation:none}}
+.eye,.talk{transform-box:fill-box;transform-origin:center}
+.eye{animation:blink 4.2s infinite}
+@keyframes blink{0%,94%,100%{scale:1}97%{scale:1 .1}}
+.talk{opacity:0}
+.talking .talk{opacity:1;animation:talk .26s ease-in-out infinite alternate}
+.talking .smile{opacity:0}
+@keyframes talk{from{scale:1 .35}to{scale:1.25 1.5}}
+.bubble{position:relative;padding:14px 16px;border-radius:16px;background:#0b1220cc;border:1px solid #33415599}
+.bubble::before{content:'';position:absolute;top:-7px;left:50%;margin-left:-6px;width:12px;height:12px;background:#0b1220;border-left:1px solid #33415599;border-top:1px solid #33415599;rotate:45deg}
+@media(prefers-reduced-motion:reduce){.eye{animation:none}}
+</style>
+</head>
+<body data-page="worlds" class="bg-nasa-darkBg text-white font-sans overflow-x-hidden selection:bg-nasa-red selection:text-white">
+
+<canvas id="space-canvas"></canvas><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="s-lm" viewBox="0 0 64 64"><path d="M20 18h24l8 8v10l-8 6H20l-8-6V26z" fill="#d97706" fill-opacity=".85" stroke="currentColor" stroke-width="2"/><path d="M22 42L8 58M42 42l14 16M32 42v16" stroke="currentColor" stroke-width="2.5"/><path d="M3 59h12M49 59h12M26 59h12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="30" r="5" fill="#0f172a" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="s-ssm" viewBox="0 0 64 64"><path d="M6 58h52" stroke="currentColor" stroke-width="3"/><path d="M14 58l14-32 14 12" stroke="currentColor" stroke-width="3" fill="none" stroke-linejoin="round"/><path d="M42 38l12 6-4 12-14-4z" fill="currentColor" fill-opacity=".35" stroke="currentColor" stroke-width="2"/><circle cx="28" cy="26" r="4" fill="#0f172a" stroke="currentColor" stroke-width="2"/></symbol>
+<symbol id="s-arm" viewBox="0 0 64 64"><rect x="6" y="48" width="22" height="10" rx="2" fill="currentColor" fill-opacity=".3" stroke="currentColor" stroke-width="2"/><path d="M16 48V30l18-14 14 8" stroke="currentColor" stroke-width="4" fill="none" stroke-linejoin="round"/><circle cx="16" cy="30" r="4" fill="#0f172a" stroke="currentColor" stroke-width="2"/><circle cx="34" cy="16" r="4" fill="#0f172a" stroke="currentColor" stroke-width="2"/><path d="M48 24l8 12h-6l-4-4z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+<symbol id="s-seis" viewBox="0 0 64 64"><path d="M10 38a22 22 0 0 1 44 0z" fill="currentColor" fill-opacity=".25" stroke="currentColor" stroke-width="2.5"/><rect x="8" y="38" width="48" height="6" rx="2" fill="currentColor" fill-opacity=".5"/><path d="M10 54l7-4 5 6 6-11 6 9 5-5 9 3" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M32 16V8" stroke="currentColor" stroke-width="2"/><circle cx="32" cy="7" r="2.5" fill="currentColor"/></symbol>
+<symbol id="s-rotor" viewBox="0 0 64 64"><path d="M8 46L46 14l6 3-3 5 6 4-5 4 3 5-9 2L12 52z" fill="currentColor" fill-opacity=".3" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><circle cx="14" cy="49" r="5" fill="#0f172a" stroke="currentColor" stroke-width="2.5"/><path d="M26 38l5-2-3-5 6-3" stroke="currentColor" stroke-width="1.8" fill="none"/></symbol>
+<symbol id="s-rtg" viewBox="0 0 64 64"><rect x="8" y="24" width="48" height="20" rx="3" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="2.5"/><path d="M16 24v20M23 24v20M30 24v20M37 24v20M44 24v20M51 24v20" stroke="currentColor" stroke-width="2"/><path d="M56 30h6v8h-6M8 30H2v8h6" stroke="currentColor" stroke-width="2.5" fill="none"/><path d="M32 19v-7M23 20l-4-6M41 20l4-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+<symbol id="s-mag" viewBox="0 0 64 64"><rect x="3" y="30" width="32" height="4" fill="currentColor" fill-opacity=".6"/><rect x="35" y="22" width="16" height="20" rx="3" fill="currentColor" fill-opacity=".25" stroke="currentColor" stroke-width="2.5"/><circle cx="43" cy="32" r="5" fill="#0f172a" stroke="currentColor" stroke-width="2"/><path d="M53 18q9 14 0 28M57 12q14 20 0 40" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></symbol>
+<symbol id="s-ccd" viewBox="0 0 64 64"><rect x="6" y="18" width="36" height="28" rx="4" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="2.5"/><circle cx="24" cy="32" r="9" fill="#020514" stroke="currentColor" stroke-width="2.5"/><circle cx="24" cy="32" r="3.5" fill="#FC3D21"/><path d="M42 26l15-7v26l-15-7z" fill="currentColor" fill-opacity=".4" stroke="currentColor" stroke-width="2"/><path d="M13 18v-5h10v5" stroke="currentColor" stroke-width="2" fill="none"/></symbol>
+</defs></svg>
+
+<main class="relative z-10">
+  <section id="arrival" class="min-h-screen relative flex flex-col items-center justify-center px-6 py-24">
+    
+    <div class="max-w-4xl w-full text-center space-y-4 mb-8">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-nasa-blue/30 border border-nasa-blue/50 text-nasa-lightBlue font-mono text-xs">
+      <span>03 —</span><span>PLANETARY EXPLORATION</span>
+      </div>
+      <h2 class="font-nasa font-bold text-3xl sm:text-5xl text-white">Choose a Destination World</h2>
+      <p class="text-gray-300 max-w-xl mx-auto">Toggle between target destinations to locate lost mission hardware on the surface.</p>
+
+      <!-- World Switcher Buttons -->
+      <div class="inline-flex p-1.5 rounded-full nasa-glass border border-nasa-blue/40 mt-4">
+        <button id="btnMoon" onclick="switchWorld('moon')" class="px-4 sm:px-6 py-2.5 rounded-full font-nasa font-bold text-sm tracking-wide transition-all duration-300 bg-nasa-blue text-white shadow-lg">
+          <i class="fa-solid fa-moon mr-2"></i> The Moon
+        </button>
+        <button id="btnMars" onclick="switchWorld('mars')" class="px-4 sm:px-6 py-2.5 rounded-full font-nasa font-bold text-sm tracking-wide transition-all duration-300 text-gray-400 hover:text-white">
+          <i class="fa-solid fa-globe mr-2 text-nasa-red"></i> Mars
+        </button>
+        <button id="btnDeep" onclick="switchWorld('deep')" class="px-4 sm:px-6 py-2.5 rounded-full font-nasa font-bold text-sm tracking-wide transition-all duration-300 text-gray-400 hover:text-white">
+          <i class="fa-solid fa-star mr-2 text-violet-400"></i> Deep Space
+        </button>
+      </div>
+    </div>
+
+    <!-- Discovery Site Surface Container -->
+    <div id="discoverSite" class="max-w-5xl w-full h-[420px] rounded-3xl relative overflow-hidden transition-all duration-700 border border-slate-700 shadow-2xl bg-gradient-to-b from-slate-900 to-slate-800">
+      
+      <!-- Surface Environment Backdrop (Moon by default) -->
+      <div id="surfaceGraphic" class="absolute inset-0 transition-all duration-700">
+        <!-- Craters SVG Overlay -->
+        <svg class="w-full h-full opacity-60" viewBox="0 0 1000 420" preserveAspectRatio="none">
+          <path id="groundPath" d="M0,280 Q250,220 500,260 T1000,240 L1000,420 L0,420 Z" fill="#334155"/>
+          <ellipse id="crater1" cx="200" cy="330" rx="90" ry="25" fill="#1e293b"/>
+          <ellipse id="crater2" cx="650" cy="350" rx="120" ry="30" fill="#1e293b"/>
+          <ellipse id="crater3" cx="850" cy="310" rx="60" ry="18" fill="#1e293b"/>
+        </svg>
+      </div>
+
+      <div class="absolute top-4 left-6 font-mono text-xs text-gray-400 flex items-center gap-2">
+        <span id="worldStatusDot" class="w-2 h-2 rounded-full bg-slate-300"></span>
+        <span id="worldStatusText" class="uppercase tracking-widest">CURRENT TARGET: LUNAR SURFACE</span>
+      </div>
+
+      <div id="deepStars" class="absolute inset-0 opacity-0 transition-opacity duration-700 pointer-events-none" style="background-image:radial-gradient(1.5px 1.5px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 90px 80px,#cbd5e1,transparent),radial-gradient(1.5px 1.5px at 150px 20px,#fff,transparent);background-size:180px 120px"></div>
+      <div id="moonObjects" class="absolute inset-0 transition-opacity duration-500"><button onclick="openModal('lm',this)" class="absolute group -translate-x-1/2 -translate-y-1/2" style="top:58%;left:28%;color:#cbd5e1"><div class="hs-ship"><svg class="hs-bob w-20" data-k="lm" style="animation-delay:-0.0s"></svg></div><span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-mono bg-black/80 px-2 py-0.5 rounded border text-white whitespace-nowrap" style="border-color:#cbd5e166">DESCENT STAGE</span></button><button onclick="openModal('ssm',this)" class="absolute group -translate-x-1/2 -translate-y-1/2" style="top:50%;left:72%;color:#cbd5e1"><div class="hs-ship"><svg class="hs-bob w-20" data-k="ssm" style="animation-delay:-0.6s"></svg></div><span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-mono bg-black/80 px-2 py-0.5 rounded border text-white whitespace-nowrap" style="border-color:#cbd5e166">SURF. SAMPLER</span></button></div>
+      <div id="marsObjects" class="absolute inset-0 transition-opacity duration-500 opacity-0 pointer-events-none"><button onclick="openModal('arm',this)" class="absolute group -translate-x-1/2 -translate-y-1/2" style="top:58%;left:22%;color:#fb923c"><div class="hs-ship"><svg class="hs-bob w-20" data-k="arm" style="animation-delay:-1.2s"></svg></div><span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-mono bg-black/80 px-2 py-0.5 rounded border text-white whitespace-nowrap" style="border-color:#fb923c66">SAMPLER ARM</span></button><button onclick="openModal('seis',this)" class="absolute group -translate-x-1/2 -translate-y-1/2" style="top:66%;left:50%;color:#fb923c"><div class="hs-ship"><svg class="hs-bob w-20" data-k="seis" style="animation-delay:-1.8s"></svg></div><span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-mono bg-black/80 px-2 py-0.5 rounded border text-white whitespace-nowrap" style="border-color:#fb923c66">SEISMOMETER</span></button><button onclick="openModal('rotor',this)" class="absolute group -translate-x-1/2 -translate-y-1/2" style="top:52%;left:78%;color:#fb923c"><div class="hs-ship"><svg class="hs-bob w-20" data-k="rotor" style="animation-delay:-2.4s"></svg></div><span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-mono bg-black/80 px-2 py-0.5 rounded border text-white whitespace-nowrap" style="border-color:#fb923c66">ROTOR BLADE</span></button></div>
+      <div id="deepObjects" class="absolute inset-0 transition-opacity duration-500 opacity-0 pointer-events-none"><button onclick="openModal('rtg',this)" class="absolute group -translate-x-1/2 -translate-y-1/2" style="top:52%;left:20%;color:#a78bfa"><div class="hs-ship"><svg class="hs-bob w-20" data-k="rtg" style="animation-delay:-3.0s"></svg></div><span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-mono bg-black/80 px-2 py-0.5 rounded border text-white whitespace-nowrap" style="border-color:#a78bfa66">RTG</span></button><button onclick="openModal('mag',this)" class="absolute group -translate-x-1/2 -translate-y-1/2" style="top:36%;left:50%;color:#a78bfa"><div class="hs-ship"><svg class="hs-bob w-20" data-k="mag" style="animation-delay:-3.6s"></svg></div><span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-mono bg-black/80 px-2 py-0.5 rounded border text-white whitespace-nowrap" style="border-color:#a78bfa66">HELIUM MAG</span></button><button onclick="openModal('ccd',this)" class="absolute group -translate-x-1/2 -translate-y-1/2" style="top:60%;left:78%;color:#a78bfa"><div class="hs-ship"><svg class="hs-bob w-20" data-k="ccd" style="animation-delay:-4.2s"></svg></div><span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-mono bg-black/80 px-2 py-0.5 rounded border text-white whitespace-nowrap" style="border-color:#a78bfa66">PHOTOMETER</span></button></div>
+      
+    </div>
+    <nav class="w-full max-w-5xl mx-auto mt-10 flex items-center justify-between gap-3 font-nasa text-sm" aria-label="Page navigation">
+      <a href="journey.html" class="px-5 py-2.5 rounded-full nasa-glass hover:border-nasa-red/60 transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Journey</a>
+      <a href="quiz.html" class="px-5 py-2.5 rounded-full bg-nasa-blue hover:bg-nasa-lightBlue font-semibold transition-colors">Quiz<i class="fa-solid fa-arrow-right ml-2"></i></a>
+    </nav>
+  </section>
+</main>
+<div id="itemModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div class="nasa-glass max-w-lg w-full max-h-[92vh] overflow-y-auto rounded-3xl p-6 sm:p-8 border border-nasa-blue/50 shadow-2xl relative space-y-6 animate-float" style="animation-duration: 10s;">
+    
+    <!-- Close Button -->
+    <button onclick="closeModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-800 hover:bg-nasa-red text-gray-300 hover:text-white flex items-center justify-center transition-colors">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+
+    <div class="flex items-center space-x-4">
+      <div id="modalIconBox" class="w-16 h-16 rounded-2xl bg-nasa-blue/30 border border-nasa-blue flex items-center justify-center text-3xl text-nasa-lightBlue">
+        <svg class="w-10 h-10"><use id="modalUse" href="#s-lm"/></svg>
+      </div>
+      <div>
+        <span class="text-xs font-mono text-nasa-lightBlue uppercase tracking-widest">RECOVERED HARDWARE</span>
+        <h3 id="modalTitle" class="font-nasa font-bold text-2xl text-white">EQUIPMENT NAME</h3>
+      </div>
+    </div>
+
+    <div id="modalStage" class="rounded-xl border border-slate-700 bg-slate-950 h-40 relative flex items-center justify-center overflow-hidden">
+      <svg id="modalBig" class="hs-bob w-28 cursor-pointer" viewBox="0 0 64 70" onclick="speak()" style="filter:drop-shadow(0 0 16px currentColor)"></svg>
+      <span id="modalWorld" class="absolute bottom-2 left-3 text-[10px] font-mono text-gray-500 tracking-widest"></span>
+    </div>
+
+    <p id="modalStory" class="bubble text-gray-200 text-sm leading-relaxed min-h-[6rem] whitespace-pre-line">
+      Equipment description and story goes here.
+    </p>
+
+    <div class="flex items-center justify-between pt-2">
+      <span class="text-xs font-mono text-emerald-400"><i class="fa-solid fa-check-circle mr-1"></i> LOGGED TO MISSION REPOSITORY</span>
+      <button onclick="closeModal()" class="px-5 py-2 rounded-full bg-nasa-blue hover:bg-nasa-lightBlue text-white font-nasa text-sm font-semibold transition-colors">
+        Continue Mission
+      </button>
+    </div>
+
+  </div>
+</div>
+<script src="js/shared.js"></script>
+<script>
+const BTN='px-4 sm:px-6 py-2.5 rounded-full font-nasa font-bold text-sm tracking-wide transition-all duration-300';
+const WORLDS={
+  moon:{text:'CURRENT TARGET: LUNAR SURFACE',dot:'bg-slate-300',on:'bg-nasa-blue',ground:'#334155',crater:'#1e293b'},
+  mars:{text:'CURRENT TARGET: MARS DESERT TERRAIN',dot:'bg-nasa-red animate-pulse',on:'bg-nasa-red',ground:'#9A3412',crater:'#7C2D12'},
+  deep:{text:'CURRENT TARGET: DEEP SPACE',dot:'bg-violet-400 animate-pulse',on:'bg-violet-600'}
+};
+const DEEP_BG='radial-gradient(ellipse at 25% 30%,#4c1d9555,transparent 55%),radial-gradient(ellipse at 80% 70%,#0b3d9166,transparent 55%),#020514';
+const $=id=>document.getElementById(id);
+function switchWorld(w){
+  for(const k in WORLDS){
+    const on=k===w,K=k[0].toUpperCase()+k.slice(1),o=$(k+'Objects');
+    $('btn'+K).className=BTN+(on?' '+WORLDS[k].on+' text-white shadow-lg':' text-gray-400 hover:text-white');
+    o.classList.toggle('opacity-0',!on);o.classList.toggle('pointer-events-none',!on);
+  }
+  const c=WORLDS[w],space=w==='deep';
+  if(!space)['groundPath','crater1','crater2','crater3'].forEach((id,i)=>$(id).setAttribute('fill',i?c.crater:c.ground));
+  $('surfaceGraphic').style.opacity=space?0:1;
+  $('deepStars').classList.toggle('opacity-0',!space);
+  $('discoverSite').style.background=space?DEEP_BG:'';
+  $('worldStatusText').textContent=c.text;
+  $('worldStatusDot').className='w-2 h-2 rounded-full '+c.dot;
+}
+
+/* EQUIPMENT: story text matches the voice files audio/<key>.mp3 */
+const equipmentData={
+ "lm": {
+  "title": "LUNAR MODULE DESCENT STAGE",
+  "color": "#cbd5e1",
+  "world": "LUNAR SURFACE",
+  "story": "Hey, I'm the Lunar Module Descent Stage!\n\nI was an important part of NASA's Apollo missions. My job was to carry the astronauts safely down to the Moon's surface.\n\nI carried the landing gear, fuel, and engine needed for the descent.\n\nBut my journey didn't end there. After the astronauts were ready to return, my upper stage lifted off, leaving me behind on the Moon.\n\nI never made it back to Earth, but I helped humans take one giant step onto another world!"
+ },
+ "ssm": {
+  "title": "SURFACE SAMPLER",
+  "color": "#cbd5e1",
+  "world": "LUNAR SURFACE",
+  "story": "Hello! I'm the Surface Sampler.\n\nI was designed to collect soil from the surface of Mars and bring it to the lander's scientific instruments.\n\nMy scoop could dig into the Martian ground, collect samples, and help scientists study what the Red Planet is made of.\n\nI even helped scientists search for organic materials and possible signs of life.\n\nI may look like a simple scoop, but I played an important role in exploring Mars!"
+ },
+ "arm": {
+  "title": "REMOTE SAMPLER ARM",
+  "color": "#fb923c",
+  "world": "MARS",
+  "story": "Hey there! I'm the Remote Sampler Arm.\n\nI was the robotic arm of the Viking lander, designed to reach across the Martian surface and collect soil samples from places the spacecraft couldn't reach directly.\n\nI could move horizontally and vertically, dig into the ground, and deliver samples to the onboard laboratories.\n\nThanks to me, scientists on Earth could study Martian soil without ever touching it themselves!"
+ },
+ "seis": {
+  "title": "SEISMOMETER",
+  "color": "#fb923c",
+  "world": "MARS",
+  "story": "Hello, I'm a Seismometer!\n\nI was sent to the Moon to listen to its movements.\n\nMy job was to detect moonquakes and vibrations caused by meteorite impacts.\n\nBy recording these movements, I helped scientists understand what was happening deep beneath the lunar surface.\n\nI was the first seismometer ever placed on the Moon, and even though I operated for only a few weeks, my discoveries opened a new chapter in lunar science!"
+ },
+ "rotor": {
+  "title": "DAMAGED ROTOR BLADE",
+  "color": "#fb923c",
+  "world": "MARS",
+  "story": "Well… I guess my flying days are over!\n\nI'm one of the rotor blades of NASA's Ingenuity helicopter.\n\nI helped make history by allowing the first powered, controlled flight on another planet.\n\nTogether with my fellow blades, I helped Ingenuity complete 72 flights on Mars.\n\nBut during our final flight on January 18, 2024, a rough landing damaged one or more of the rotor blades.\n\nI could no longer help Ingenuity fly, but our mission had already made history!"
+ },
+ "rtg": {
+  "title": "RADIOISOTOPE GENERATOR",
+  "color": "#a78bfa",
+  "world": "DEEP SPACE",
+  "story": "Hi! I'm a Radioisotope Thermoelectric Generator, or RTG.\n\nMy job was to provide electrical power to the Viking lander.\n\nUnlike solar panels, I didn't need sunlight to keep working. I converted heat from the natural decay of radioactive material into electricity.\n\nI helped keep the spacecraft's systems running in the harsh Martian environment.\n\nWithout a reliable source of power, exploring Mars for years would have been much harder!"
+ },
+ "mag": {
+  "title": "HELIUM VECTOR MAGNETOMETER",
+  "color": "#a78bfa",
+  "world": "DEEP SPACE",
+  "story": "Hello! I'm the Helium Vector Magnetometer.\n\nI traveled aboard NASA's Pioneer 10 spacecraft to explore the magnetic fields of space.\n\nMy job was to measure the strength and direction of magnetic fields around the spacecraft.\n\nWhen Pioneer 10 reached Jupiter, my measurements helped scientists understand the planet's powerful magnetic environment.\n\nI couldn't take pictures, but I could detect something invisible that cameras could never show!"
+ },
+ "ccd": {
+  "title": "PHOTOMETER / CCD CAMERA",
+  "color": "#a78bfa",
+  "world": "DEEP SPACE",
+  "story": "Hey! I'm a Photometer and CCD Camera.\n\nI have two important jobs: measuring light and capturing images.\n\nAs a photometer, I measure how bright stars and other celestial objects appear.\n\nAs a CCD camera, I turn incoming light into digital images that scientists can study.\n\nEvery measurement and every image helps researchers understand distant objects and discover more about our universe.\n\nAfter all, sometimes the smallest details in the light can reveal the biggest secrets of space!"
+ }
+};
+
+Object.keys(equipmentData).forEach(k=>equipmentData[k].audio=equipmentData[k].audio||`audio/${k}.mp3`); /* voice files: audio/<key>.mp3 */
+
+/* face screen [x,y,w,h], legs [y,x1,x2], arms [y,xL,xR] on each 64x64 symbol */
+const FACE={lm:[21,21,22,16,0,[30,12,52]],ssm:[19,18,20,15,0,0],arm:[7,23,20,15,[58,11,21],0],seis:[19,24,26,13,[44,24,40],[38,10,54]],rotor:[18,25,16,12,[54,11,17],0],rtg:[19,26,26,16,[44,22,42],0],mag:[34,24,18,14,[42,38,46],0],ccd:[10,22,28,22,[46,16,30],0]};
+function charInner(k){
+  const [x,y,w,h,lg,ar]=FACE[k],cx=x+w/2,f=n=>+n.toFixed(1),L='stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"';
+  let s='';
+  if(lg)s+=`<path d="M${lg[1]} ${lg[0]}l-2 13M${lg[2]} ${lg[0]}l2 13" ${L}/>`;
+  if(ar)s+=`<path d="M${ar[1]} ${ar[0]}q-7 2-8 10M${ar[2]} ${ar[0]}q7 2 8 10" ${L}/>`;
+  s+=`<use href="#s-${k}" width="64" height="64"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="#0b1220" fill-opacity=".92" stroke="currentColor" stroke-width="1.4"/>`;
+  const ey=f(y+h*.38),r=f(Math.max(1.5,h*.11));
+  s+=[-1,1].map(d=>`<circle class="eye" cx="${f(cx+d*w*.22)}" cy="${ey}" r="${r}" fill="#e2e8f0"/><circle cx="${f(cx+d*w*.34)}" cy="${f(y+h*.64)}" r="${f(h*.07)}" fill="#f472b6" fill-opacity=".55"/>`).join('');
+  return s+`<path class="smile" d="M${f(cx-w*.14)} ${f(y+h*.66)}q${f(w*.14)} ${f(h*.22)} ${f(w*.28)} 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/><ellipse class="talk" cx="${f(cx)}" cy="${f(y+h*.74)}" rx="${f(w*.1)}" ry="${f(h*.1)}" fill="currentColor"/>`;
+}
+document.querySelectorAll('svg[data-k]').forEach(s=>{s.setAttribute('viewBox','0 0 64 70');s.innerHTML=charInner(s.dataset.k)});
+
+let ship=null,tw=null,busy=false,cur=null,au=null,typing=false,playing=false;
+const sync=()=>$('modalBig').classList.toggle('talking',typing||playing);
+function typeStory(t,ms){
+  const el=$('modalStory');clearInterval(tw);el.style.minHeight='';el.textContent=t;el.style.minHeight=el.offsetHeight+'px';el.textContent='';let i=0;typing=true;sync();
+  tw=setInterval(()=>{el.textContent=t.slice(0,++i);if(i>=t.length){clearInterval(tw);typing=false;sync()}},ms);
+}
+function stopSpeech(){
+  clearInterval(tw);typing=playing=false;
+  if(au){au.pause();au.onplaying=au.onended=au.onpause=au.onerror=au.onloadedmetadata=null;au=null}
+  sync();
+}
+function speak(){ /* talks: plays the voice file if it exists, otherwise just types the story */
+  const it=equipmentData[cur];if(!it)return;stopSpeech();
+  typeStory(it.story,22);
+  au=new Audio(it.audio);
+  au.onplaying=()=>{playing=true;sync()};
+  au.onpause=au.onended=au.onerror=()=>{playing=false;sync()};
+  au.onloadedmetadata=()=>typeStory(it.story,Math.max(15,au.duration*1000/it.story.length));
+  au.play().catch(()=>{});
+}
+function openModal(key,btn){
+  const it=equipmentData[key];if(!it||busy)return;
+  busy=true;cur=key;ship=btn&&btn.querySelector('.hs-ship');
+  const face=btn&&btn.querySelector('svg');
+  if(ship){ship.style.transform='translateY(-38px) scale(1.5)';face.classList.add('talking')}
+  setTimeout(()=>{
+    if(face)face.classList.remove('talking');
+    $('modalIconBox').style.color=it.color;$('modalStage').style.color=it.color;
+    $('modalUse').setAttribute('href','#s-'+key);
+    $('modalBig').innerHTML=charInner(key);
+    $('modalTitle').textContent=it.title;$('modalWorld').textContent=it.world+' · tap me to hear it again';
+    $('itemModal').classList.remove('hidden');
+    $('modalBig').animate([{scale:.4,opacity:0},{scale:1,opacity:1}],{duration:500,easing:'ease-out'});
+    speak();SM.addFound(key);
+  },ship?480:0);
+}
+function closeModal(){
+  $('itemModal').classList.add('hidden');stopSpeech();
+  if(ship){ship.style.transform='';ship=null}
+  busy=false;
+}
+addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+</script>
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Memory — Marv's Comic Book</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="js/tailwind-config.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Titillium+Web:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+.world-card,.comic-card{color:#fff;border:1px solid #33415599;background:rgba(15,23,42,.55);backdrop-filter:blur(6px);transition:transform .25s,border-color .25s,box-shadow .25s}
+.world-card{display:block;text-align:center;padding:28px 16px 24px;border-radius:24px}
+.world-card svg,.world-card canvas{width:100%;max-width:240px;margin:0 auto;display:block;transition:scale .3s}
+.world-card canvas{aspect-ratio:1;filter:drop-shadow(0 0 16px color-mix(in srgb,var(--c) 45%,transparent))}
+.world-card:hover,.world-card:focus-visible,.comic-card:not(:disabled):hover,.comic-card:not(:disabled):focus-visible{transform:translateY(-6px);border-color:var(--c);box-shadow:0 0 40px -8px var(--c);outline:none}
+.world-card:hover svg,.world-card:hover canvas{scale:1.05}
+.comic-card{display:flex;flex-direction:column;gap:12px;text-align:left;padding:14px;border-radius:20px}
+.comic-card:disabled{opacity:.75;cursor:not-allowed}
+.cover{position:relative;aspect-ratio:3/4;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 35%,#0b1220),#0b1220)}
+.soon{font:2rem Bangers,Impact,cursive;letter-spacing:2px;color:var(--c);text-align:center;padding:0 12px}
+.soon.name{font-size:clamp(1.7rem,5vw,2.4rem);line-height:1.1;text-wrap:balance}
+.tag{position:absolute;top:10px;left:10px;z-index:1;font:600 11px/1 ui-monospace,monospace;padding:6px 9px;border-radius:999px;background:#0b1220cc;border:1px solid var(--c);color:var(--c)}
+.play{position:absolute;font-size:3.2rem;color:#fff;opacity:.9;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.cf.blank.end{display:flex;align-items:center;justify-content:center;text-align:center;background:radial-gradient(circle at 50% 40%,#1e293b,#0b1220);color:#fcd34d;font:clamp(2rem,7vw,3.5rem) Bangers,Impact,cursive;letter-spacing:3px;text-shadow:3px 3px 0 #b91c1c}
+.stage{animation:stageIn .35s ease-out}
+@keyframes stageIn{from{opacity:0;translate:0 12px}}
+@media(prefers-reduced-motion:reduce){.stage{animation:none}.world-card,.comic-card{transition:none}}
+</style>
+</head>
+<body data-page="comic" class="bg-nasa-darkBg text-white font-sans overflow-x-hidden selection:bg-nasa-red selection:text-white">
+
+<canvas id="space-canvas"></canvas>
+
+<main class="relative z-10">
+  <section id="comic" class="relative flex flex-col items-center px-4 py-24 gap-6">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-nasa-yellow/30 border border-nasa-yel/50 text-nasa-yellow font-mono text-xs">
+        <span>05</span> — <span>Story-Telling</span>
+      </div>
+    <div class="w-full max-w-5xl"><button id="backBtn" class="hidden px-4 py-2 rounded-full nasa-glass hover:border-nasa-red/60 transition-colors font-nasa text-sm"><i class="fa-solid fa-arrow-left mr-2"></i><span id="backLbl">Back to worlds</span></button></div>
+    <div class="text-center space-y-3 max-w-2xl">
+      <h2 id="comicTitle" class="text-4xl sm:text-6xl text-amber-300 text-glow-red" style="font-family:Bangers,Impact,cursive;letter-spacing:2px">Choose a World</h2>
+      <p id="comicSub" class="text-gray-300">Pick a world to find its stories.</p>
+    </div>
+
+    <div id="stageWorlds" class="stage w-full max-w-7xl grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-8 mt-4">
+      <button class="world-card" data-w="moon" style="--c:#cbd5e1" aria-label="The Moon comics">
+        <canvas data-planet="moon" width="256" height="256" aria-hidden="true"></canvas>
+        <span class="font-nasa font-bold text-2xl sm:text-3xl mt-4 block">Moon</span>
+      </button>
+      <button class="world-card" data-w="mars" style="--c:#fb923c" aria-label="Mars comics">
+        <canvas data-planet="mars" width="256" height="256" aria-hidden="true"></canvas>
+        <span class="font-nasa font-bold text-2xl sm:text-3xl mt-4 block">Mars</span>
+      </button>
+      <button class="world-card" data-w="deep" style="--c:#a78bfa" aria-label="Deep Space comics">
+        <canvas data-planet="deep" width="400" height="400" aria-hidden="true"></canvas>
+        <span class="font-nasa font-bold text-2xl sm:text-3xl mt-4 block">Deep Space</span>
+      </button>
+    </div>
+
+    <div id="stageComics" class="stage hidden w-full max-w-3xl mt-4"><div id="comicCards" class="grid grid-cols-1 sm:grid-cols-2 gap-6"></div></div>
+
+    <div id="stageReader" class="stage hidden w-full flex flex-col items-center gap-6">
+      <div id="comicWrap"><div id="comicBook" class="cbook" role="group" aria-label="Comic book"></div></div>
+      <div class="flex items-center gap-4 font-mono text-sm text-gray-300">
+        <button id="comicPrev" aria-label="Previous page" class="w-11 h-11 rounded-full nasa-glass border border-nasa-lightBlue/50 hover:bg-nasa-red/80 transition disabled:opacity-30 disabled:pointer-events-none"><i class="fa-solid fa-chevron-left"></i></button>
+        <span id="comicLbl" aria-live="polite" class="min-w-[11rem] text-center">Cover</span>
+        <button id="comicNext" aria-label="Next page" class="w-11 h-11 rounded-full nasa-glass border border-nasa-lightBlue/50 hover:bg-nasa-red/80 transition disabled:opacity-30 disabled:pointer-events-none"><i class="fa-solid fa-chevron-right"></i></button>
+        <button id="comicSnd" class="w-11 h-11 rounded-full nasa-glass border border-nasa-lightBlue/50 hover:bg-nasa-red/80 transition"></button>
+      </div>
+    </div>
+
+    <div id="stageVideo" class="stage hidden w-full max-w-4xl"><video id="comicVideo" controls playsinline class="w-full aspect-video rounded-2xl border border-slate-700 bg-black"></video></div>
+
+    <nav class="w-full max-w-5xl mx-auto mt-10 flex items-center justify-between gap-3 font-nasa text-sm" aria-label="Page navigation">
+      <a href="quiz.html" class="px-5 py-2.5 rounded-full nasa-glass hover:border-nasa-red/60 transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Quiz</a>
+    </nav>
+  </section>
+</main>
+
+<script src="js/shared.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const seq = (p, n) => Array.from({ length: n }, (_, i) => `images/${p}-${String(i + 1).padStart(2, '0')}.jpg`);
+  const WORLDS = {
+    moon: { name: 'The Moon', color: '#cbd5e1' },
+    mars: { name: 'Mars', color: '#fb923c' },
+    deep: { name: 'Deep Space', color: '#a78bfa' }
+  };
+  /* World -> two stories -> comic or video.
+     Comic: images: seq('prefix', pageCount) (page images in images/).  Video: src: 'videos/name.mp4' (optional poster: 'images/x.jpg').
+     Leave images empty / src empty to show "Coming soon". Titles and blurbs are free to rename. */
+  const STORIES = {
+    moon: [
+      { title: 'First Story', blurb: 'Surveyor 3 on the Moon.',
+        comic: { title: 'Surveyor 3 Adventure', images: seq('surveyor', 11),
+          alts: ["Surveyor 3 Adventure cover", "The Lunar Walk", "The Encounter", "Birth of a Pioneer", "Bouncing Touchdown", "A Lunar Friend", "Danger Unseen", "A Mysterious Foe, part 1", "A Mysterious Foe, part 2", "The Clever Strategy", "Echoes in Eternity"] },
+        video: { title: 'Surveyor 3 Video', src: 'videos/surveyor3.mp4', poster: 'images/surveyor-video-poster.jpg' } },
+      { title: 'Second Story', blurb: 'Apollo 12 visits an old friend.',
+        comic: { title: 'Apollo 12', images: seq('apollo', 11),
+          alts: ["Apollo 12 cover", "The Dream Begins", "A Shock to the System", "Journey into the Deep Black", "Orbiting the Moon", "The Ocean of Storms", "A Giant Leap for Pete", "Secrets of the Dust", "Meeting an Old Friend", "The Journey Home", "Splashdown and Legacy"] },
+        video: { title: 'Moon Video 2', src: '' } }
+    ],
+    mars: [
+      { title: 'First Story', blurb: 'Viking 1 & Viking 2: our journey to Mars.',
+        comic: { title: 'Viking 1 & Viking 2: Our Journey to Mars', images: seq('viking', 6),
+          alts: ["Viking 1 and Viking 2: Our Journey to Mars cover", "Viking 1, the meeting", "Viking 1, the journey and the danger", "Viking 1's story", "Viking 2's story", "The final Martian dawn"] },
+        video: { title: 'Viking Video', src: '' } },
+      { title: 'Second Story', blurb: 'Ingenuity, the first helicopter on Mars.',
+        comic: { title: 'Ingenuity: The Mars Helicopter', images: seq('ingenuity', 11),
+          alts: ["Ingenuity: The Mars Helicopter cover", "The Impossible Challenge", "Building the Mars Helicopter", "Deep Space Voyage to Mars", "Beyond Expectations", "The First Flight, a new era", "Landing at Jezero Crater", "Touchdown on Another World", "Beyond Expectations, historic success", "Facing the Martian Storms", "A new era of exploration and NASA legacy"] },
+        video: { title: 'Ingenuity Video', src: '' } }
+    ],
+    deep: [
+      { title: 'First Story', blurb: 'Pioneer 10 & 11: a legacy among the stars.',
+        comic: { title: 'The Pioneer Voyagers: A Legacy Among the Stars', images: seq('pioneer', 11),
+          alts: ["The Pioneer Voyagers: A Legacy Among the Stars cover", "The Earth Farewell", "Dancing with Rocks", "The King of Planets", "The Closest Encounter", "Beyond the Giants", "The Silent Years", "The Last Whisper", "Message in a Bottle", "Toward the Red Star", "The Legacy of the Pioneers"] },
+        video: { title: 'Pioneer Video', src: '' } },
+      { title: 'Second Story', blurb: 'Kepler, the planet hunter.',
+        comic: { title: 'Kepler: The Planet Hunter', images: seq('kepler', 11),
+          alts: ["Kepler cover", "The Planet Hunter: the spark of an idea", "Blastoff into the deep cosmos", "The Transit Method: catching the shadows", "Crisis in Space: failing wheels", "The K2 Reborn: balancing on sunlight", "Alien Worlds: more planets than stars", "The Final Silence", "The Pathfinder: shaping the future", "The Cosmic Perspective: we are not alone", "Our Place in the Stars: the endless horizon"] },
+        video: { title: 'Kepler Video', src: '' } }
+    ]
+  };
+
+  /* world -> story -> comic / video */
+  let stage = 'worlds', world = null, story = 0, IM = [], AL = [];
+  const vid = $('comicVideo');
+  const img = s => `<img src="${s}" alt="" class="w-full h-full object-cover">`;
+  const tag = (icon, text) => `<span class="tag"><i class="fa-solid ${icon}"></i> ${text}</span>`;
+  const soon = '<span class="soon">Coming soon</span>';
+  const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const card = (i, ok, color, tg, cover, title, sub) => `<button class="comic-card" data-i="${i}" ${ok ? '' : 'disabled'} style="--c:${color}"><div class="cover">${tg}${cover}</div><div><h3 class="font-nasa font-bold text-xl">${title}</h3><p class="text-sm text-gray-400">${sub}</p></div></button>`;
+  function show(s, title, sub) {
+    stage = s;
+    $('stageWorlds').classList.toggle('hidden', s !== 'worlds');
+    $('stageComics').classList.toggle('hidden', s !== 'stories' && s !== 'formats');
+    $('stageReader').classList.toggle('hidden', s !== 'reader');
+    $('stageVideo').classList.toggle('hidden', s !== 'video');
+    if (s !== 'video') { vid.pause(); vid.removeAttribute('src'); vid.load(); }
+    $('backBtn').classList.toggle('hidden', s === 'worlds');
+    $('backLbl').textContent = s === 'stories' ? 'Back to worlds' : s === 'formats' ? 'Back to ' + WORLDS[world].name : 'Back to ' + STORIES[world][story].title.toLowerCase();
+    $('comicTitle').textContent = title; $('comicSub').textContent = sub;
+    scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function openWorlds() { show('worlds', 'Choose a World', 'Pick a world to find its stories.'); }
+  function openWorld(w) {
+    world = w; const W = WORLDS[w];
+    $('comicCards').innerHTML = STORIES[w].map((s, i) => {
+      const okC = s.comic.images.length > 0, okV = !!s.video.src, ok = okC || okV;
+      const art = `<span class="soon name">${esc(okC ? s.comic.title : s.video.title)}</span>`;
+      return card(i, ok, W.color, tag('fa-bookmark', 'Story ' + (i + 1)), ok ? art : soon, s.title, s.blurb || (ok ? [okC && 'Comic', okV && 'Video'].filter(Boolean).join(' · ') : 'On the way'));
+    }).join('');
+    show('stories', W.name, 'Two stories are waiting here. Pick one.');
+  }
+  function openStory(i) {
+    story = i; const s = STORIES[world][i], W = WORLDS[world], okC = s.comic.images.length > 0, okV = !!s.video.src;
+    $('comicCards').innerHTML =
+      card(0, okC, W.color, tag('fa-book-open', 'Comic'), okC ? img(s.comic.images[0]) : soon, s.comic.title, okC ? s.comic.images.length + ' pages' : 'On the way') +
+      card(1, okV, W.color, tag('fa-circle-play', 'Video'), okV ? (s.video.poster ? img(s.video.poster) : '') + '<i class="fa-solid fa-circle-play play"></i>' : soon, s.video.title, okV ? 'Watch the story' : 'On the way');
+    show('formats', W.name + ' \u00b7 ' + s.title, 'Read it as a comic or watch it as a video.');
+  }
+  function openFormat(i) {
+    const s = STORIES[world][story];
+    if (i === 1) { show('video', s.video.title, 'Press play to watch.'); vid.poster = s.video.poster || ''; vid.src = s.video.src; return; }
+    IM = s.comic.images; AL = s.comic.alts || IM.map((_, k) => `${s.comic.title}, page ${k + 1}`);
+    show('reader', s.comic.title, 'Flip through the story page by page. Tap the page, use the arrows, or swipe.');
+    build();
+  }
+  $('stageWorlds').addEventListener('click', e => { const b = e.target.closest('[data-w]'); if (b) openWorld(b.dataset.w); });
+  $('comicCards').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (!b || b.disabled) return; if (stage === 'stories') openStory(+b.dataset.i); else openFormat(+b.dataset.i); });
+  $('backBtn').addEventListener('click', () => { if (stage === 'stories') openWorlds(); else if (stage === 'formats') openWorld(world); else openStory(story); });
+
+  /* realistic Moon, Mars & galaxy, all drawn in code; each one turns a little on hover */
+  const H3 = (x, y, z, s) => { const n = Math.sin(x * 127.1 + y * 311.7 + z * 74.7 + s * 19.19) * 43758.5453; return n - Math.floor(n); };
+  const lerp = (a, b, t) => a + (b - a) * t;
+  function N3(x, y, z, s) {
+    const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z), fx = x - xi, fy = y - yi, fz = z - zi;
+    const u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy), w = fz * fz * (3 - 2 * fz);
+    const q = k => lerp(lerp(H3(xi, yi, zi + k, s), H3(xi + 1, yi, zi + k, s), u), lerp(H3(xi, yi + 1, zi + k, s), H3(xi + 1, yi + 1, zi + k, s), u), v);
+    return lerp(q(0), q(1), w);
+  }
+  const FB = (x, y, z, s, o) => { let a = 0, t = 0, m = .5, f = 1; for (let i = 0; i < o; i++) { a += m * N3(x * f, y * f, z * f, s); t += m; f *= 2; m *= .5; } return a / t; };
+  const sm = (a, b, x) => { x = Math.min(1, Math.max(0, (x - a) / (b - a))); return x * x * (3 - 2 * x); };
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* eases a value toward a goal while the card is hovered / focused, and back when it is not */
+  function hoverTurn(cv, start, amount, draw) {
+    let v = start, goal = start, raf = 0;
+    const tick = () => { v += (goal - v) * .06; draw(v); raf = Math.abs(goal - v) > Math.abs(amount) * .002 ? requestAnimationFrame(tick) : 0; };
+    const to = g => { goal = g; if (!raf) raf = requestAnimationFrame(tick); };
+    if (!still) {
+      const card = cv.closest('.world-card');
+      ['mouseenter', 'focus'].forEach(e => card.addEventListener(e, () => to(start + amount)));
+      ['mouseleave', 'blur'].forEach(e => card.addEventListener(e, () => to(start)));
+    }
+    draw(start);
+  }
+
+  function planet(cv, mars, start) {
+    const S = cv.width = cv.height = 400, C = S / 2, R = 186, TW = 768, TH = 384, ctx = cv.getContext('2d'), T = mars ? .44 : .12;
+    let sd = mars ? 7 : 3; const rnd = () => (sd = sd * 16807 % 2147483647) / 2147483647;
+    const tex = new Uint8ClampedArray(TW * TH * 3), Ht = new Float32Array(TW * TH), SC = TW / 1024, K = .2 / SC;
+    function* build() {
+      for (let j = 0; j < TH; j++) {                       /* 1. colour + rough ground from noise */
+        const la = (.5 - (j + .5) / TH) * Math.PI, cl = Math.cos(la), y = Math.sin(la);
+        for (let i = 0; i < TW; i++) {
+          const lo = (i / TW - .5) * 6.2832, x = cl * Math.sin(lo), z = cl * Math.cos(lo), t = (j * TW + i) * 3;
+          let r, g, b, h;
+          if (!mars) {
+            const mare = sm(.5, .6, FB(x * 1.4, y * 1.4, z * 1.4, 3, 3)), g1 = FB(x * 8, y * 8, z * 8, 5, 4), g2 = FB(x * 38, y * 38, z * 38, 6, 3);
+            const v = Math.min(1, Math.max(0, .72 - .36 * mare + (g1 - .5) * .3 + (g2 - .5) * .18)) * 238;
+            r = v * 1.03; g = v; b = v * .95; h = ((g1 - .5) * 12 + (g2 - .5) * 4) * (1 - .6 * mare) * SC;
+          } else {
+            const big = sm(.46, .6, FB(x * 1.8, y * 1.8, z * 1.8, 11, 4)), mid = sm(.4, .7, FB(x * 3.5, y * 3.5, z * 3.5, 2, 3));
+            const g1 = FB(x * 10, y * 10, z * 10, 12, 4), g2 = FB(x * 40, y * 40, z * 40, 13, 3), st = FB(x * 3, y * 14, z * 3, 21, 3);
+            const dv = .84 + (g1 - .5) * .5 + (g2 - .5) * .22 + (st - .5) * .3;
+            r = lerp(lerp(214, 160, mid), 84, big * .85) * dv; g = lerp(lerp(128, 84, mid), 46, big * .85) * dv; b = lerp(lerp(78, 52, mid), 36, big * .85) * dv;
+            h = ((g1 - .5) * 10 + (g2 - .5) * 4) * SC;
+          }
+          tex[t] = r; tex[t + 1] = g; tex[t + 2] = b; Ht[j * TW + i] = h;
+        }
+        if (j % 10 === 0) yield;
+      }
+      const NC = mars ? 150 : 540;                         /* 2. impact craters: bowl, raised rim, bright young ones */
+      for (let k = 0; k < NC; k++) {
+        const lo = rnd() * 6.2832, la = Math.asin(2 * rnd() - 1), rmin = mars ? .012 : .008, rmax = mars ? .1 : .15;
+        const r = rmin * Math.pow(rmax / rmin, Math.pow(rnd(), 1.6)), cx = Math.cos(la) * Math.sin(lo), cy = Math.sin(la), cz = Math.cos(la) * Math.cos(lo);
+        const amp = mars ? .6 : 1 - .75 * sm(.5, .6, FB(cx * 1.4, cy * 1.4, cz * 1.4, 3, 3)), rt = r * TW / 6.2832, depth = .4 * rt * amp, fresh = k % 6 === 0;
+        const jc = Math.floor((.5 - la / Math.PI) * TH), ic = Math.floor((lo / 6.2832 + .5) * TW), rows = Math.ceil(rt * 2.3);
+        for (let dj = -rows; dj <= rows; dj++) {
+          const j = jc + dj; if (j < 0 || j >= TH) continue;
+          const lj = (.5 - (j + .5) / TH) * Math.PI, cl = Math.cos(lj), cols = Math.min(TW / 2, Math.ceil(rt * 2.3 / Math.max(.05, cl)));
+          for (let di = -cols; di <= cols; di++) {
+            const i = (ic + di + TW) % TW, li = (i / TW - .5) * 6.2832;
+            const dot = cl * Math.sin(li) * cx + Math.sin(lj) * cy + cl * Math.cos(li) * cz, d = Math.acos(Math.min(1, dot)) / r;
+            if (d > 2.3) continue;
+            let h = 0;
+            if (d < 1) { h = -depth * (1 - d * d); if (!mars && r > .07) h += depth * .55 * Math.exp(-(d / .2) * (d / .2)); }
+            h += .28 * depth * Math.exp(-((d - 1) / .16) * ((d - 1) / .16));
+            const idx = j * TW + i; Ht[idx] += h;
+            if (fresh) { const f = 1 + .3 * amp * Math.exp(-d * d / 1.4), t = idx * 3; tex[t] *= f; tex[t + 1] *= f; tex[t + 2] *= f; }
+          }
+        }
+        if (k % 25 === 0) yield;
+      }
+      for (let j = 0; j < TH; j++) {                       /* 3. light the relief from the upper left (+ Mars polar caps) */
+        const la = (.5 - (j + .5) / TH) * Math.PI, jp = Math.max(0, j - 1), jn = Math.min(TH - 1, j + 1), cl = Math.cos(la), y = Math.sin(la);
+        for (let i = 0; i < TW; i++) {
+          const ip = (i + TW - 1) % TW, inx = (i + 1) % TW, em = 1 + K * (Ht[jn * TW + inx] - Ht[jp * TW + ip]), t = (j * TW + i) * 3;
+          let r = tex[t] * em, g = tex[t + 1] * em, b = tex[t + 2] * em;
+          if (mars) {
+            const lo = (i / TW - .5) * 6.2832, cap = sm(1.22, 1.34, Math.abs(la) + (FB(cl * Math.sin(lo) * 6, y * 6, cl * Math.cos(lo) * 6, 5, 3) - .5) * .2);
+            r = lerp(r, 240 * (1 + .6 * (em - 1)), cap); g = lerp(g, 235 * (1 + .6 * (em - 1)), cap); b = lerp(b, 230 * (1 + .6 * (em - 1)), cap);
+          }
+          tex[t] = r; tex[t + 1] = g; tex[t + 2] = b;
+        }
+        if (j % 16 === 0) yield;
+      }
+      const n = S * S, row = new Uint16Array(n), col = new Float32Array(n), sh = new Float32Array(n), rim = new Float32Array(n), img = ctx.createImageData(S, S), d = img.data;
+      const L = [-.5, .42, .75], ll = Math.hypot(L[0], L[1], L[2]), cT = Math.cos(T), sT = Math.sin(T);
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        const i = y * S + x, nx = (x + .5 - C) / R, ny = (y + .5 - C) / R, r2 = nx * nx + ny * ny, a = Math.min(1, Math.max(0, (1 - Math.sqrt(r2)) * R + .5));
+        if (!a) continue;
+        const nz = Math.sqrt(Math.max(0, 1 - r2)), vy = -ny, py = vy * cT + nz * sT, pz = -vy * sT + nz * cT, dot = (nx * L[0] + vy * L[1] + nz * L[2]) / ll;
+        sh[i] = .12 + .88 * Math.pow(Math.max(0, dot), .75);
+        if (mars) rim[i] = Math.pow(Math.sqrt(Math.min(1, r2)), 8) * .5 * sm(-.3, .4, dot);
+        row[i] = Math.min(TH - 1, Math.max(0, Math.floor((.5 - Math.asin(Math.max(-1, Math.min(1, py))) / Math.PI) * TH)));
+        col[i] = (Math.atan2(nx, pz) / 6.2832 + .5) * TW; d[i * 4 + 3] = a * 255;
+      }
+      return off => {
+        for (let i = 0; i < n; i++) {
+          if (!d[i * 4 + 3]) continue;
+          const t = (row[i] * TW + ((((col[i] + off) % TW) + TW) % TW | 0)) * 3, s = sh[i], q = rim[i];
+          d[i * 4] = tex[t] * s + 255 * q; d[i * 4 + 1] = tex[t + 1] * s + 140 * q; d[i * 4 + 2] = tex[t + 2] * s + 80 * q;
+        }
+        ctx.putImageData(img, 0, 0);
+      };
+    }
+    const it = build(), step = () => {
+      const t0 = performance.now(); let r;
+      while (!(r = it.next()).done) if (performance.now() - t0 > 10) break;
+      if (r.done) hoverTurn(cv, start, -90, r.value); else setTimeout(step, 0);
+    };
+    step();
+  }
+
+  function galaxy(cv) {
+    const S = cv.width = cv.height = 400, C = 200, ctx = cv.getContext('2d');
+    let sd = 5; const rnd = () => (sd = sd * 16807 % 2147483647) / 2147483647, gs = () => (rnd() + rnd() + rnd() - 1.5) / .75;
+    const sprite = rgb => { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, `rgba(${rgb},1)`); gr.addColorStop(.4, `rgba(${rgb},.35)`); gr.addColorStop(1, `rgba(${rgb},0)`); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return c; };
+    const SP = { blue: sprite('120,160,255'), pink: sprite('255,110,170'), dark: sprite('20,10,10') };
+    const arm = r => 3.2 * Math.log(1 + r / 20), mk = (n, f) => Array.from({ length: n }, f), side = () => rnd() < .5 ? 0 : Math.PI;
+    const haze = mk(1500, () => { const r = 14 + Math.pow(rnd(), 1.4) * 170; return { r, th: arm(r) + side() + gs() * .3, s: 16 + (1 - r / 190) * 26 + rnd() * 10, al: .04 + rnd() * .05, k: rnd() < .08 ? 'pink' : 'blue' }; });
+    const dust = mk(520, () => { const r = 24 + rnd() * 150; return { r, th: arm(r) + side() - .34 + gs() * .08, s: 10 + rnd() * 12, al: .05 + rnd() * .06 }; });
+    const stars = mk(5200, () => {
+      const u = rnd(); let r, th;
+      if (u < .62) { r = 6 + Math.pow(rnd(), 1.3) * 176; th = arm(r) + side() + gs() * .34; }
+      else if (u < .82) { r = 4 + Math.pow(rnd(), 2) * 180; th = rnd() * 6.2832; }
+      else { r = Math.abs(gs()) * 26 + 2; th = rnd() * 6.2832; }
+      return { r, th, c: r < 30 ? '255,228,170' : (rnd() < .78 ? '195,215,255' : '255,235,215'), a: .35 + rnd() * .65, z: rnd() < .06 ? 2 : 1 };
+    }).sort((a, b) => a.c < b.c ? -1 : a.c > b.c ? 1 : 0);
+    const bg = mk(70, () => ({ x: rnd() * S, y: rnd() * S, a: .2 + rnd() * .6 }));
+    const ca = Math.cos(-.45), sa = Math.sin(-.45), KK = .46;
+    const pt = (r, th, w) => { const a = th + w * (1.35 - r / 150), x = r * Math.cos(a), y = r * Math.sin(a) * KK; return [C + x * ca - y * sa, C + x * sa + y * ca]; };
+    const draw = w => {
+      ctx.clearRect(0, 0, S, S);
+      ctx.globalCompositeOperation = 'lighter';
+      for (const h of haze) { const [x, y] = pt(h.r, h.th, w); ctx.globalAlpha = h.al; ctx.drawImage(SP[h.k], x - h.s, y - h.s * .8, h.s * 2, h.s * 1.6); }
+      ctx.globalCompositeOperation = 'source-atop';
+      for (const d of dust) { const [x, y] = pt(d.r, d.th, w); ctx.globalAlpha = d.al; ctx.drawImage(SP.dark, x - d.s, y - d.s * .7, d.s * 2, d.s * 1.4); }
+      ctx.globalCompositeOperation = 'lighter'; let cc = '';
+      for (const s of stars) { if (s.c !== cc) { ctx.fillStyle = `rgb(${s.c})`; cc = s.c; } const [x, y] = pt(s.r, s.th, w); ctx.globalAlpha = s.a; ctx.fillRect(x, y, s.z, s.z); }
+      ctx.fillStyle = '#fff'; for (const b of bg) { ctx.globalAlpha = b.a; ctx.fillRect(b.x, b.y, 1, 1); }
+      const g = ctx.createRadialGradient(C, C, 0, C, C, 52); g.addColorStop(0, 'rgba(255,246,225,1)'); g.addColorStop(.12, 'rgba(255,222,160,.85)'); g.addColorStop(.4, 'rgba(255,170,90,.28)'); g.addColorStop(1, 'rgba(255,140,60,0)');
+      ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.save(); ctx.translate(C, C); ctx.scale(1, .72); ctx.translate(-C, -C); ctx.fillRect(0, 0, S, S); ctx.restore();
+      ctx.globalCompositeOperation = 'source-over';
+    };
+    hoverTurn(cv, 0, .55, draw);
+  }
+  document.querySelectorAll('canvas[data-planet]').forEach((cv, k) => setTimeout(() => { const p = cv.dataset.planet; if (p === 'deep') galaxy(cv); else planet(cv, p === 'mars', 0); }, 80 + k * 200));
+
+
+  /* page-flip reader */
+  const bk = $('comicBook'), wrap = $('comicWrap');
+  const lbl = $('comicLbl'), prev = $('comicPrev'), next = $('comicNext');
+  const mq = matchMedia('(min-width: 900px)');
+  let cur = 0, sheets = [], spread = true, tx = 0, moved = false, vis = false;
+
+  const face = (i, cls) => i < IM.length
+    ? `<div class="cf ${cls}"><img src="${IM[i]}" alt="${AL[i]}" draggable="false"></div>`
+    : i === IM.length ? `<div class="cf ${cls} blank end">THE END!</div>` : `<div class="cf ${cls} blank"></div>`;
+  const max = () => spread ? sheets.length - (IM.length % 2 === 0 ? 1 : 0) : sheets.length - 1;
+
+  function build() {
+    if (stage !== 'reader') return;
+    spread = mq.matches; cur = 0; sheets = []; bk.innerHTML = '';
+    bk.className = 'cbook ' + (spread ? 'spread' : 'single');
+    const n = spread ? Math.ceil((IM.length + 1) / 2) : IM.length + 1;   /* +1 = the closing THE END card */
+    for (let k = 0; k < n; k++) {
+      const el = document.createElement('div'); el.className = 'csheet';
+      el.innerHTML = spread ? face(2 * k, 'front') + face(2 * k + 1, 'back') : face(k, 'front') + '<div class="cf back blank"></div>';
+      bk.appendChild(el); sheets.push(el);
+    }
+    render(true);
+  }
+
+  function render(inst) {
+    sheets.forEach((el, i) => {
+      const fl = i < cur, z = fl ? i + 1 : sheets.length - i;
+      if (el._f !== undefined && el._f !== fl && !inst) { el.style.zIndex = 99; setTimeout(() => el.style.zIndex = z, 900); }
+      else el.style.zIndex = z;
+      el._f = fl; el.classList.toggle('flipped', fl);
+    });
+    bk.style.transform = spread ? (cur === 0 ? 'translateX(-25%)' : cur === sheets.length ? 'translateX(25%)' : 'translateX(0)') : '';
+    lbl.textContent = spread
+      ? (cur === 0 ? 'Cover' : cur === sheets.length || 2 * cur === IM.length ? 'The End' : `Pages ${2 * cur}\u2013${Math.min(2 * cur + 1, IM.length)} of ${IM.length}`)
+      : (cur >= IM.length ? 'The End' : `Page ${cur + 1} of ${IM.length}`);
+    prev.disabled = cur === 0; next.disabled = cur >= max();
+  }
+
+  /* page-flip sound: plays audio/flip.mp3 (a real page-turn recording). If that file is missing, a crisp paper turn
+     is made with the Web Audio API instead. start / length (seconds) pick which part of the file plays; length 0 = all of it. */
+  let ac = null, muted = false;
+  try { muted = localStorage.getItem('comicMuted') === '1'; } catch (e) {}
+  const FLIP = { file: 'audio/flip.mp3', start: 0, length: 0 };
+  let pool = null, pi = 0;   /* a few ready-loaded copies so quick flips play instantly and can overlap */
+  { const a = new Audio(FLIP.file); a.preload = 'auto'; a.addEventListener('canplaythrough', () => { pool = [a, a.cloneNode(), a.cloneNode()]; }, { once: true }); }
+  function flipSound() {
+    if (muted) return;
+    if (pool) { const c = pool[pi++ % pool.length]; clearTimeout(c._t); c.currentTime = FLIP.start; c.volume = .8; c.play().catch(() => {}); if (FLIP.length) c._t = setTimeout(() => c.pause(), FLIP.length * 1000); return; }
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === 'suspended') ac.resume();
+      const sr = ac.sampleRate, n = Math.floor(sr * .3), buf = ac.createBuffer(1, n, sr), d = buf.getChannelData(0);
+      let lp = 0;
+      for (let k = 0; k < n; k++) {
+        const t = k / sr, w = Math.random() * 2 - 1;
+        lp += (w - lp) * .35;
+        const body = Math.pow(Math.sin(Math.PI * Math.min(1, t / .21)), 1.4);      /* soft rise and fall of the turn */
+        const rustle = Math.random() < .02 ? 1.8 : .55;                            /* crinkly paper texture */
+        const slap = t > .2 ? Math.exp(-(t - .2) * 70) * 1.1 : 0;                  /* the page landing */
+        d[k] = (lp * rustle * body + w * slap) * .5;
+      }
+      const src = ac.createBufferSource(), hp = ac.createBiquadFilter(), pk = ac.createBiquadFilter(), lo = ac.createBiquadFilter(), g = ac.createGain();
+      src.buffer = buf; src.playbackRate.value = .92 + Math.random() * .2;           /* every flip sounds a little different */
+      hp.type = 'highpass'; hp.frequency.value = 1200;
+      pk.type = 'peaking'; pk.frequency.value = 3200; pk.gain.value = 5; pk.Q.value = .9;
+      lo.type = 'lowpass'; lo.frequency.value = 7500; g.gain.value = .9;
+      src.connect(hp); hp.connect(pk); pk.connect(lo); lo.connect(g); g.connect(ac.destination); src.start();
+    } catch (e) {}
+  }
+  const snd = $('comicSnd');
+  const paintSnd = () => { snd.innerHTML = `<i class="fa-solid ${muted ? 'fa-volume-xmark' : 'fa-volume-high'}"></i>`; snd.setAttribute('aria-label', muted ? 'Turn page sound on' : 'Turn page sound off'); };
+  snd.addEventListener('click', () => { muted = !muted; try { localStorage.setItem('comicMuted', muted ? '1' : '0'); } catch (e) {} paintSnd(); if (!muted) flipSound(); });
+  paintSnd();
+
+  function go(d) { const n = cur + d; if (n < 0 || n > max()) return; cur = n; flipSound(); render(); }
+
+  prev.addEventListener('click', () => go(-1));
+  next.addEventListener('click', () => go(1));
+  bk.addEventListener('click', e => {
+    if (moved) { moved = false; return; }
+    const r = bk.getBoundingClientRect(), x = e.clientX - r.left;
+    go(x > r.width * (spread ? 0.5 : 0.35) ? 1 : -1);
+  });
+  bk.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  bk.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 45) { moved = true; go(dx < 0 ? 1 : -1); }
+  });
+  new IntersectionObserver(en => { vis = en[0].isIntersecting; }, { threshold: 0.3 }).observe(wrap);
+  addEventListener('keydown', e => {
+    if (!vis || /INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+    if (e.key === 'ArrowRight') go(1); else if (e.key === 'ArrowLeft') go(-1);
+  });
+  mq.addEventListener('change', build);
+})();
+</script>
+</body>
+</html>
